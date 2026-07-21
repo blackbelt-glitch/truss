@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Truss Logo — Gradient Glow</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0D0D0D; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; gap: 56px; font-family: -apple-system, sans-serif; padding: 48px; }
+  .row { display: flex; gap: 48px; align-items: center; justify-content: center; }
+  .label { color: #555; font-size: 11px; text-align: center; margin-top: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+  .icon-wrap { display: flex; flex-direction: column; align-items: center; }
+  .ios { border-radius: 22.5%; overflow: hidden; box-shadow: 0 20px 60px rgba(0,0,0,0.8); }
+  .ios-sm { border-radius: 20%; overflow: hidden; box-shadow: 0 8px 24px rgba(0,0,0,0.6); }
+  h2 { color: #333; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; font-weight: 400; }
+</style>
+</head>
+<body>
+
+<h2>Truss — Gradient Glow Icon Refinements</h2>
+
+<div class="row">
+
+  <!-- V1: Clean warm glow, balanced proportions -->
+  <div class="icon-wrap">
+    <div class="ios">
+    <svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="v1amber" x1="0%" y1="0%" x2="10%" y2="100%">
+          <stop offset="0%" stop-color="#FDE68A"/>
+          <stop offset="40%" stop-color="#F59E0B"/>
+          <stop offset="100%" stop-color="#B45309"/>
+        </linearGradient>
+        <linearGradient id="v1bg" x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%" stop-color="#1C1200"/>
+          <stop offset="100%" stop-color="#080808"/>
+        </linearGradient>
+        <filter id="v1glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="4" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="v1softglow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="10" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Background -->
+      <rect width="240" height="240" fill="url(#v1bg)"/>
+
+      <!-- Subtle amber halo behind the icon -->
+      <ellipse cx="120" cy="130" rx="55" ry="90" fill="#F59E0B" opacity="0.06"/>
+
+      <!-- Top bar -->
+      <rect x="24" y="32" width="192" height="30" rx="5" fill="url(#v1amber)" filter="url(#v1glow)"/>
+
+      <!-- Stem left rail -->
+      <rect x="100" y="62" width="14" height="140" fill="url(#v1amber)"/>
+      <!-- Stem right rail -->
+      <rect x="126" y="62" width="14" height="140" fill="url(#v1amber)"/>
+
+      <!-- Bottom plate -->
+      <rect x="93" y="190" width="54" height="13" rx="4" fill="url(#v1amber)" filter="url(#v1glow)"/>
+
+      <!-- Warren truss diagonals — 5 panels -->
+      <g stroke="url(#v1amber)" stroke-width="3.5" stroke-linecap="round" filter="url(#v1glow)">
+        <!-- Horizontals -->
+        <line x1="100" y1="85"  x2="140" y2="85"/>
+        <line x1="100" y1="111" x2="140" y2="111"/>
+        <line x1="100" y1="137" x2="140" y2="137"/>
+        <line x1="100" y1="163" x2="140" y2="163"/>
+        <!-- Warren diagonals -->
+        <line x1="100" y1="62"  x2="140" y2="85"/>
+        <line x1="140" y1="85"  x2="100" y2="111"/>
+        <line x1="100" y1="111" x2="140" y2="137"/>
+        <line x1="140" y1="137" x2="100" y2="163"/>
+        <line x1="100" y1="163" x2="140" y2="190"/>
+      </g>
+
+      <!-- Mask outside stem -->
+      <rect x="0"   y="62" width="100" height="140" fill="url(#v1bg)"/>
+      <rect x="140" y="62" width="100" height="140" fill="url(#v1bg)"/>
+    </svg>
+    </div>
+    <div class="label">Warm Glow</div>
+  </div>
+
+  <!-- V2: Stronger glow, deeper dark bg, top bar wider -->
+  <div class="icon-wrap">
+    <div class="ios">
+    <svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="v2amber" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FCD34D"/>
+          <stop offset="50%" stop-color="#F59E0B"/>
+          <stop offset="100%" stop-color="#92400E"/>
+        </linearGradient>
+        <filter id="v2glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="5" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="1 0.6 0 0 0  0.6 0.3 0 0 0  0 0 0 0 0  0 0 0 1 0" result="colored"/>
+          <feMerge><feMergeNode in="colored"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="v2outerGlow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="14" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="1 0.5 0 0 0  0.5 0.2 0 0 0  0 0 0 0 0  0 0 0 0.5 0"/>
+        </filter>
+      </defs>
+
+      <!-- Deep bg -->
+      <rect width="240" height="240" fill="#060606"/>
+
+      <!-- Outer glow layer behind everything -->
+      <g filter="url(#v2outerGlow)">
+        <rect x="24" y="32" width="192" height="30" fill="#F59E0B"/>
+        <rect x="100" y="62" width="14" height="140" fill="#F59E0B"/>
+        <rect x="126" y="62" width="14" height="140" fill="#F59E0B"/>
+      </g>
+
+      <!-- Top bar -->
+      <rect x="24" y="32" width="192" height="30" rx="5" fill="url(#v2amber)" filter="url(#v2glow)"/>
+
+      <!-- Rails -->
+      <rect x="100" y="62" width="14" height="140" fill="url(#v2amber)" filter="url(#v2glow)"/>
+      <rect x="126" y="62" width="14" height="140" fill="url(#v2amber)" filter="url(#v2glow)"/>
+
+      <!-- Bottom plate -->
+      <rect x="93" y="190" width="54" height="13" rx="4" fill="url(#v2amber)" filter="url(#v2glow)"/>
+
+      <!-- Truss -->
+      <g stroke="url(#v2amber)" stroke-width="3.5" stroke-linecap="round" filter="url(#v2glow)">
+        <line x1="100" y1="85"  x2="140" y2="85"/>
+        <line x1="100" y1="111" x2="140" y2="111"/>
+        <line x1="100" y1="137" x2="140" y2="137"/>
+        <line x1="100" y1="163" x2="140" y2="163"/>
+        <line x1="100" y1="62"  x2="140" y2="85"/>
+        <line x1="140" y1="85"  x2="100" y2="111"/>
+        <line x1="100" y1="111" x2="140" y2="137"/>
+        <line x1="140" y1="137" x2="100" y2="163"/>
+        <line x1="100" y1="163" x2="140" y2="190"/>
+      </g>
+
+      <!-- Masks -->
+      <rect x="0"   y="62" width="100" height="140" fill="#060606"/>
+      <rect x="140" y="62" width="100" height="140" fill="#060606"/>
+    </svg>
+    </div>
+    <div class="label">Deep Glow</div>
+  </div>
+
+  <!-- V3: Neon edge — very bright center with dark outer -->
+  <div class="icon-wrap">
+    <div class="ios">
+    <svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="v3amber" x1="0%" y1="0%" x2="5%" y2="100%">
+          <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/>
+          <stop offset="15%" stop-color="#FDE68A"/>
+          <stop offset="45%" stop-color="#F59E0B"/>
+          <stop offset="100%" stop-color="#78350F"/>
+        </linearGradient>
+        <filter id="v3glow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="3.5" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="v3bigGlow" x="-100%" y="-100%" width="300%" height="300%">
+          <feGaussianBlur stdDeviation="18" result="blur"/>
+          <feColorMatrix in="blur" type="matrix" values="1 0.6 0 0 0  0.4 0.2 0 0 0  0 0 0 0 0  0 0 0 0.7 0"/>
+        </filter>
+        <radialGradient id="v3bgRad" cx="50%" cy="45%" r="55%">
+          <stop offset="0%" stop-color="#1a0e00"/>
+          <stop offset="100%" stop-color="#050505"/>
+        </radialGradient>
+      </defs>
+
+      <rect width="240" height="240" fill="url(#v3bgRad)"/>
+
+      <!-- Big outer glow -->
+      <g filter="url(#v3bigGlow)" opacity="0.8">
+        <rect x="24" y="32" width="192" height="30" fill="#F59E0B"/>
+        <rect x="100" y="62" width="14" height="140" fill="#F59E0B"/>
+        <rect x="126" y="62" width="14" height="140" fill="#F59E0B"/>
+        <rect x="93" y="190" width="54" height="13" fill="#F59E0B"/>
+      </g>
+
+      <!-- Top bar -->
+      <rect x="24" y="32" width="192" height="30" rx="5" fill="url(#v3amber)" filter="url(#v3glow)"/>
+
+      <!-- Rails -->
+      <rect x="100" y="62" width="14" height="140" fill="url(#v3amber)"/>
+      <rect x="126" y="62" width="14" height="140" fill="url(#v3amber)"/>
+
+      <!-- Bottom plate -->
+      <rect x="93" y="190" width="54" height="13" rx="4" fill="url(#v3amber)" filter="url(#v3glow)"/>
+
+      <!-- Truss -->
+      <g stroke="url(#v3amber)" stroke-width="3.5" stroke-linecap="round" filter="url(#v3glow)">
+        <line x1="100" y1="85"  x2="140" y2="85"/>
+        <line x1="100" y1="111" x2="140" y2="111"/>
+        <line x1="100" y1="137" x2="140" y2="137"/>
+        <line x1="100" y1="163" x2="140" y2="163"/>
+        <line x1="100" y1="62"  x2="140" y2="85"/>
+        <line x1="140" y1="85"  x2="100" y2="111"/>
+        <line x1="100" y1="111" x2="140" y2="137"/>
+        <line x1="140" y1="137" x2="100" y2="163"/>
+        <line x1="100" y1="163" x2="140" y2="190"/>
+      </g>
+
+      <!-- Masks -->
+      <rect x="0"   y="62" width="100" height="140" fill="url(#v3bgRad)"/>
+      <rect x="140" y="62" width="100" height="140" fill="url(#v3bgRad)"/>
+
+      <!-- Subtle top bar corner shine -->
+      <rect x="24" y="32" width="192" height="4" rx="2" fill="white" opacity="0.15"/>
+    </svg>
+    </div>
+    <div class="label">White-Hot Tip</div>
+  </div>
+
+</div>
+
+<div class="row">
+
+  <!-- V4: Thicker T, bolder truss, more industrial -->
+  <div class="icon-wrap">
+    <div class="ios">
+    <svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="v4amber" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FCD34D"/>
+          <stop offset="100%" stop-color="#D97706"/>
+        </linearGradient>
+        <filter id="v4glow" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="4.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="v4bg" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="20" result="b"/>
+          <feColorMatrix in="b" values="1 0.5 0 0 0 0.4 0.15 0 0 0 0 0 0 0 0 0 0 0 0.4 0"/>
+        </filter>
+      </defs>
+
+      <rect width="240" height="240" fill="#080808"/>
+
+      <!-- Ambient glow layer -->
+      <g filter="url(#v4bg)">
+        <rect x="20" y="28" width="200" height="36" fill="#F59E0B"/>
+        <rect x="97"  y="64" width="18" height="144" fill="#F59E0B"/>
+        <rect x="125" y="64" width="18" height="144" fill="#F59E0B"/>
+      </g>
+
+      <!-- Top bar — thicker -->
+      <rect x="20" y="28" width="200" height="36" rx="6" fill="url(#v4amber)" filter="url(#v4glow)"/>
+
+      <!-- Thick rails -->
+      <rect x="97"  y="64" width="18" height="144" fill="url(#v4amber)" filter="url(#v4glow)"/>
+      <rect x="125" y="64" width="18" height="144" fill="url(#v4amber)" filter="url(#v4glow)"/>
+
+      <!-- Bottom plate — thick -->
+      <rect x="89" y="196" width="62" height="16" rx="5" fill="url(#v4amber)" filter="url(#v4glow)"/>
+
+      <!-- Bolder truss lines -->
+      <g stroke="url(#v4amber)" stroke-width="4.5" stroke-linecap="round" filter="url(#v4glow)">
+        <line x1="97"  y1="88"  x2="143" y2="88"/>
+        <line x1="97"  y1="116" x2="143" y2="116"/>
+        <line x1="97"  y1="144" x2="143" y2="144"/>
+        <line x1="97"  y1="172" x2="143" y2="172"/>
+        <line x1="97"  y1="64"  x2="143" y2="88"/>
+        <line x1="143" y1="88"  x2="97"  y2="116"/>
+        <line x1="97"  y1="116" x2="143" y2="144"/>
+        <line x1="143" y1="144" x2="97"  y2="172"/>
+        <line x1="97"  y1="172" x2="143" y2="196"/>
+      </g>
+
+      <!-- Masks with same dark -->
+      <rect x="0"   y="64" width="97"  height="144" fill="#080808"/>
+      <rect x="143" y="64" width="97"  height="144" fill="#080808"/>
+
+      <!-- Top bar highlight line -->
+      <rect x="20" y="28" width="200" height="5" rx="3" fill="white" opacity="0.12"/>
+    </svg>
+    </div>
+    <div class="label">Bold Industrial</div>
+  </div>
+
+  <!-- V5: Symmetric + centered glow spotlight -->
+  <div class="icon-wrap">
+    <div class="ios">
+    <svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="v5top" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#FDE68A"/>
+          <stop offset="100%" stop-color="#F59E0B"/>
+        </linearGradient>
+        <linearGradient id="v5stem" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stop-color="#F59E0B"/>
+          <stop offset="100%" stop-color="#92400E"/>
+        </linearGradient>
+        <radialGradient id="v5spotlight" cx="50%" cy="42%" r="45%">
+          <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.15"/>
+          <stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/>
+        </radialGradient>
+        <filter id="v5glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- bg -->
+      <rect width="240" height="240" fill="#050505"/>
+
+      <!-- Spotlight -->
+      <rect width="240" height="240" fill="url(#v5spotlight)"/>
+
+      <!-- Top bar -->
+      <rect x="22" y="30" width="196" height="32" rx="6" fill="url(#v5top)" filter="url(#v5glow)"/>
+
+      <!-- Rails -->
+      <rect x="101" y="62" width="15" height="142" fill="url(#v5stem)"/>
+      <rect x="124" y="62" width="15" height="142" fill="url(#v5stem)"/>
+
+      <!-- Bottom plate -->
+      <rect x="94" y="192" width="52" height="14" rx="4" fill="url(#v5stem)" filter="url(#v5glow)"/>
+
+      <!-- Warren truss -->
+      <g stroke="url(#v5stem)" stroke-width="3.5" stroke-linecap="round" filter="url(#v5glow)">
+        <line x1="101" y1="86"  x2="139" y2="86"/>
+        <line x1="101" y1="112" x2="139" y2="112"/>
+        <line x1="101" y1="138" x2="139" y2="138"/>
+        <line x1="101" y1="164" x2="139" y2="164"/>
+        <line x1="101" y1="62"  x2="139" y2="86"/>
+        <line x1="139" y1="86"  x2="101" y2="112"/>
+        <line x1="101" y1="112" x2="139" y2="138"/>
+        <line x1="139" y1="138" x2="101" y2="164"/>
+        <line x1="101" y1="164" x2="139" y2="192"/>
+      </g>
+
+      <!-- Masks -->
+      <rect x="0"   y="62" width="101" height="142" fill="#050505"/>
+      <rect x="139" y="62" width="101" height="142" fill="#050505"/>
+
+      <!-- Shine on top bar -->
+      <rect x="22" y="30" width="196" height="6" rx="3" fill="white" opacity="0.18"/>
+      <!-- Shine on bottom of top bar -->
+      <rect x="22" y="56" width="196" height="2" fill="black" opacity="0.3"/>
+    </svg>
+    </div>
+    <div class="label">Spotlight</div>
+  </div>
+
+  <!-- V6: Final — best of everything, slight texture -->
+  <div class="icon-wrap">
+    <div class="ios">
+    <svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="v6main" x1="0%" y1="0%" x2="8%" y2="100%">
+          <stop offset="0%" stop-color="#FEF3C7"/>
+          <stop offset="20%" stop-color="#FCD34D"/>
+          <stop offset="55%" stop-color="#F59E0B"/>
+          <stop offset="100%" stop-color="#78350F"/>
+        </linearGradient>
+        <radialGradient id="v6bg" cx="50%" cy="38%" r="60%">
+          <stop offset="0%" stop-color="#180E00"/>
+          <stop offset="70%" stop-color="#0A0700"/>
+          <stop offset="100%" stop-color="#050505"/>
+        </radialGradient>
+        <filter id="v6glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="b"/>
+          <feColorMatrix in="b" type="matrix" values="1 0.6 0 0 0.05  0.5 0.25 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+          <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="v6aura" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="22" result="b"/>
+          <feColorMatrix in="b" type="matrix" values="1 0.5 0 0 0  0.35 0.15 0 0 0  0 0 0 0 0  0 0 0 0.55 0"/>
+        </filter>
+      </defs>
+
+      <rect width="240" height="240" fill="url(#v6bg)"/>
+
+      <!-- Aura behind icon -->
+      <g filter="url(#v6aura)">
+        <rect x="22" y="30" width="196" height="32" rx="6" fill="#F59E0B"/>
+        <rect x="101" y="62" width="15" height="142" fill="#F59E0B"/>
+        <rect x="124" y="62" width="15" height="142" fill="#F59E0B"/>
+      </g>
+
+      <!-- Top bar -->
+      <rect x="22" y="30" width="196" height="32" rx="6" fill="url(#v6main)" filter="url(#v6glow)"/>
+
+      <!-- Stem rails -->
+      <rect x="101" y="62" width="15" height="142" fill="url(#v6main)" filter="url(#v6glow)"/>
+      <rect x="124" y="62" width="15" height="142" fill="url(#v6main)" filter="url(#v6glow)"/>
+
+      <!-- Bottom plate -->
+      <rect x="94" y="192" width="52" height="14" rx="4" fill="url(#v6main)" filter="url(#v6glow)"/>
+
+      <!-- Truss members -->
+      <g stroke="url(#v6main)" stroke-width="3.8" stroke-linecap="round" filter="url(#v6glow)">
+        <line x1="101" y1="86"  x2="139" y2="86"/>
+        <line x1="101" y1="112" x2="139" y2="112"/>
+        <line x1="101" y1="138" x2="139" y2="138"/>
+        <line x1="101" y1="164" x2="139" y2="164"/>
+        <line x1="101" y1="62"  x2="139" y2="86"/>
+        <line x1="139" y1="86"  x2="101" y2="112"/>
+        <line x1="101" y1="112" x2="139" y2="138"/>
+        <line x1="139" y1="138" x2="101" y2="164"/>
+        <line x1="101" y1="164" x2="139" y2="192"/>
+      </g>
+
+      <!-- Masks -->
+      <rect x="0"   y="62" width="101" height="142" fill="url(#v6bg)"/>
+      <rect x="139" y="62" width="101" height="142" fill="url(#v6bg)"/>
+
+      <!-- Specular highlight on top bar -->
+      <rect x="22" y="30" width="196" height="7" rx="4" fill="white" opacity="0.2"/>
+      <!-- Bottom edge shadow on bar -->
+      <rect x="22" y="58" width="196" height="3" fill="black" opacity="0.25"/>
+    </svg>
+    </div>
+    <div class="label">⭐ Final</div>
+  </div>
+
+</div>
+
+<!-- Small size preview row -->
+<div style="color:#444; font-size:10px; letter-spacing:1.5px; text-transform:uppercase;">60px home screen preview</div>
+<div class="row" style="gap: 20px;">
+  <!-- Repeat all 6 at 64px -->
+  <div class="icon-wrap">
+    <div class="ios-sm">
+    <svg width="64" height="64" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="s1" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#D97706"/></linearGradient>
+        <filter id="sg1"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="240" height="240" fill="#0C0800"/>
+      <rect x="24" y="32" width="192" height="30" rx="5" fill="url(#s1)" filter="url(#sg1)"/>
+      <rect x="100" y="62" width="14" height="140" fill="url(#s1)"/>
+      <rect x="126" y="62" width="14" height="140" fill="url(#s1)"/>
+      <rect x="93" y="190" width="54" height="13" rx="4" fill="url(#s1)" filter="url(#sg1)"/>
+      <g stroke="url(#s1)" stroke-width="3.5" stroke-linecap="round" filter="url(#sg1)">
+        <line x1="100" y1="85"  x2="140" y2="85"/><line x1="100" y1="111" x2="140" y2="111"/>
+        <line x1="100" y1="137" x2="140" y2="137"/><line x1="100" y1="163" x2="140" y2="163"/>
+        <line x1="100" y1="62"  x2="140" y2="85"/><line x1="140" y1="85"  x2="100" y2="111"/>
+        <line x1="100" y1="111" x2="140" y2="137"/><line x1="140" y1="137" x2="100" y2="163"/>
+        <line x1="100" y1="163" x2="140" y2="190"/>
+      </g>
+      <rect x="0" y="62" width="100" height="140" fill="#0C0800"/>
+      <rect x="140" y="62" width="100" height="140" fill="#0C0800"/>
+    </svg></div><div class="label">1</div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="ios-sm">
+    <svg width="64" height="64" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="s2" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#92400E"/></linearGradient>
+        <filter id="sg2"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="240" height="240" fill="#060606"/>
+      <rect x="24" y="32" width="192" height="30" rx="5" fill="url(#s2)" filter="url(#sg2)"/>
+      <rect x="100" y="62" width="14" height="140" fill="url(#s2)" filter="url(#sg2)"/>
+      <rect x="126" y="62" width="14" height="140" fill="url(#s2)" filter="url(#sg2)"/>
+      <rect x="93" y="190" width="54" height="13" rx="4" fill="url(#s2)" filter="url(#sg2)"/>
+      <g stroke="url(#s2)" stroke-width="3.5" stroke-linecap="round" filter="url(#sg2)">
+        <line x1="100" y1="85"  x2="140" y2="85"/><line x1="100" y1="111" x2="140" y2="111"/>
+        <line x1="100" y1="137" x2="140" y2="137"/><line x1="100" y1="163" x2="140" y2="163"/>
+        <line x1="100" y1="62"  x2="140" y2="85"/><line x1="140" y1="85"  x2="100" y2="111"/>
+        <line x1="100" y1="111" x2="140" y2="137"/><line x1="140" y1="137" x2="100" y2="163"/>
+        <line x1="100" y1="163" x2="140" y2="190"/>
+      </g>
+      <rect x="0" y="62" width="100" height="140" fill="#060606"/>
+      <rect x="140" y="62" width="100" height="140" fill="#060606"/>
+    </svg></div><div class="label">2</div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="ios-sm">
+    <svg width="64" height="64" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="s3" x1="0%" y1="0%" x2="5%" y2="100%"><stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.9"/><stop offset="15%" stop-color="#FDE68A"/><stop offset="45%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+        <radialGradient id="s3bg" cx="50%" cy="45%" r="55%"><stop offset="0%" stop-color="#1a0e00"/><stop offset="100%" stop-color="#050505"/></radialGradient>
+        <filter id="sg3"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="240" height="240" fill="url(#s3bg)"/>
+      <rect x="24" y="32" width="192" height="30" rx="5" fill="url(#s3)" filter="url(#sg3)"/>
+      <rect x="100" y="62" width="14" height="140" fill="url(#s3)"/>
+      <rect x="126" y="62" width="14" height="140" fill="url(#s3)"/>
+      <rect x="93" y="190" width="54" height="13" rx="4" fill="url(#s3)" filter="url(#sg3)"/>
+      <g stroke="url(#s3)" stroke-width="3.5" stroke-linecap="round" filter="url(#sg3)">
+        <line x1="100" y1="85"  x2="140" y2="85"/><line x1="100" y1="111" x2="140" y2="111"/>
+        <line x1="100" y1="137" x2="140" y2="137"/><line x1="100" y1="163" x2="140" y2="163"/>
+        <line x1="100" y1="62"  x2="140" y2="85"/><line x1="140" y1="85"  x2="100" y2="111"/>
+        <line x1="100" y1="111" x2="140" y2="137"/><line x1="140" y1="137" x2="100" y2="163"/>
+        <line x1="100" y1="163" x2="140" y2="190"/>
+      </g>
+      <rect x="0" y="62" width="100" height="140" fill="url(#s3bg)"/>
+      <rect x="140" y="62" width="100" height="140" fill="url(#s3bg)"/>
+    </svg></div><div class="label">3</div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="ios-sm">
+    <svg width="64" height="64" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="s4" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FCD34D"/><stop offset="100%" stop-color="#D97706"/></linearGradient>
+        <filter id="sg4"><feGaussianBlur stdDeviation="4.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="240" height="240" fill="#080808"/>
+      <rect x="20" y="28" width="200" height="36" rx="6" fill="url(#s4)" filter="url(#sg4)"/>
+      <rect x="97"  y="64" width="18" height="144" fill="url(#s4)" filter="url(#sg4)"/>
+      <rect x="125" y="64" width="18" height="144" fill="url(#s4)" filter="url(#sg4)"/>
+      <rect x="89" y="196" width="62" height="16" rx="5" fill="url(#s4)" filter="url(#sg4)"/>
+      <g stroke="url(#s4)" stroke-width="4.5" stroke-linecap="round" filter="url(#sg4)">
+        <line x1="97" y1="88"  x2="143" y2="88"/><line x1="97" y1="116" x2="143" y2="116"/>
+        <line x1="97" y1="144" x2="143" y2="144"/><line x1="97" y1="172" x2="143" y2="172"/>
+        <line x1="97" y1="64"  x2="143" y2="88"/><line x1="143" y1="88"  x2="97" y2="116"/>
+        <line x1="97" y1="116" x2="143" y2="144"/><line x1="143" y1="144" x2="97" y2="172"/>
+        <line x1="97" y1="172" x2="143" y2="196"/>
+      </g>
+      <rect x="0" y="64" width="97" height="144" fill="#080808"/>
+      <rect x="143" y="64" width="97" height="144" fill="#080808"/>
+    </svg></div><div class="label">4</div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="ios-sm">
+    <svg width="64" height="64" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="s5t" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#FDE68A"/><stop offset="100%" stop-color="#F59E0B"/></linearGradient>
+        <linearGradient id="s5s" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#92400E"/></linearGradient>
+        <filter id="sg5"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="240" height="240" fill="#050505"/>
+      <rect x="22" y="30" width="196" height="32" rx="6" fill="url(#s5t)" filter="url(#sg5)"/>
+      <rect x="101" y="62" width="15" height="142" fill="url(#s5s)"/>
+      <rect x="124" y="62" width="15" height="142" fill="url(#s5s)"/>
+      <rect x="94" y="192" width="52" height="14" rx="4" fill="url(#s5s)" filter="url(#sg5)"/>
+      <g stroke="url(#s5s)" stroke-width="3.5" stroke-linecap="round" filter="url(#sg5)">
+        <line x1="101" y1="86"  x2="139" y2="86"/><line x1="101" y1="112" x2="139" y2="112"/>
+        <line x1="101" y1="138" x2="139" y2="138"/><line x1="101" y1="164" x2="139" y2="164"/>
+        <line x1="101" y1="62"  x2="139" y2="86"/><line x1="139" y1="86"  x2="101" y2="112"/>
+        <line x1="101" y1="112" x2="139" y2="138"/><line x1="139" y1="138" x2="101" y2="164"/>
+        <line x1="101" y1="164" x2="139" y2="192"/>
+      </g>
+      <rect x="0" y="62" width="101" height="142" fill="#050505"/>
+      <rect x="139" y="62" width="101" height="142" fill="#050505"/>
+    </svg></div><div class="label">5</div>
+  </div>
+
+  <div class="icon-wrap">
+    <div class="ios-sm">
+    <svg width="64" height="64" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="s6" x1="0%" y1="0%" x2="8%" y2="100%"><stop offset="0%" stop-color="#FEF3C7"/><stop offset="20%" stop-color="#FCD34D"/><stop offset="55%" stop-color="#F59E0B"/><stop offset="100%" stop-color="#78350F"/></linearGradient>
+        <radialGradient id="s6bg" cx="50%" cy="38%" r="60%"><stop offset="0%" stop-color="#180E00"/><stop offset="100%" stop-color="#050505"/></radialGradient>
+        <filter id="sg6"><feGaussianBlur stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      </defs>
+      <rect width="240" height="240" fill="url(#s6bg)"/>
+      <rect x="22" y="30" width="196" height="32" rx="6" fill="url(#s6)" filter="url(#sg6)"/>
+      <rect x="101" y="62" width="15" height="142" fill="url(#s6)" filter="url(#sg6)"/>
+      <rect x="124" y="62" width="15" height="142" fill="url(#s6)" filter="url(#sg6)"/>
+      <rect x="94" y="192" width="52" height="14" rx="4" fill="url(#s6)" filter="url(#sg6)"/>
+      <g stroke="url(#s6)" stroke-width="3.8" stroke-linecap="round" filter="url(#sg6)">
+        <line x1="101" y1="86"  x2="139" y2="86"/><line x1="101" y1="112" x2="139" y2="112"/>
+        <line x1="101" y1="138" x2="139" y2="138"/><line x1="101" y1="164" x2="139" y2="164"/>
+        <line x1="101" y1="62"  x2="139" y2="86"/><line x1="139" y1="86"  x2="101" y2="112"/>
+        <line x1="101" y1="112" x2="139" y2="138"/><line x1="139" y1="138" x2="101" y2="164"/>
+        <line x1="101" y1="164" x2="139" y2="192"/>
+      </g>
+      <rect x="0" y="62" width="101" height="142" fill="url(#s6bg)"/>
+      <rect x="139" y="62" width="101" height="142" fill="url(#s6bg)"/>
+      <rect x="22" y="30" width="196" height="7" rx="4" fill="white" opacity="0.2"/>
+    </svg></div><div class="label">⭐ 6</div>
+  </div>
+
+</div>
+
+</body>
+</html>

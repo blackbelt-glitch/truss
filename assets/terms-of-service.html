@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Terms of Service – Truss</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0A0A0A;
+      --surface:   #141414;
+      --border:    #1F1F1F;
+      --text:      #E5E5E5;
+      --muted:     #888888;
+      --amber:     #F59E0B;
+      --amber-dim: #92600A;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 32px;
+      margin-bottom: 48px;
+    }
+
+    .app-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .app-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--amber) 0%, #B45309 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .app-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    h1 {
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ── Section headings ── */
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--amber);
+      margin-top: 48px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.2px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-top: 20px;
+      margin-bottom: 8px;
+    }
+
+    /* ── Body copy ── */
+    p { margin-bottom: 14px; }
+    p:last-of-type { margin-bottom: 0; }
+
+    ul {
+      margin: 10px 0 14px 0;
+      padding-left: 20px;
+    }
+
+    ul li { margin-bottom: 6px; }
+
+    ol {
+      margin: 10px 0 14px 0;
+      padding-left: 22px;
+    }
+
+    ol li { margin-bottom: 8px; }
+
+    /* ── Highlight box ── */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin: 20px 0;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .callout strong { color: var(--amber); }
+
+    /* ── Info table-style row ── */
+    .info-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 10px;
+      display: flex;
+      gap: 16px;
+    }
+
+    .info-row .label {
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      min-width: 130px;
+      padding-top: 1px;
+      flex-shrink: 0;
+    }
+
+    .info-row .value {
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .info-row .value strong { color: var(--amber); }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 24px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .contact-card .icon {
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .contact-card a {
+      color: var(--amber);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .contact-card a:hover { text-decoration: underline; }
+
+    .contact-card .label-small {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 2px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 72px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--amber); }
+
+    a { color: var(--amber); }
+
+    /* ── Responsive ── */
+    @media (max-width: 540px) {
+      .page-wrap { padding: 40px 16px 80px; }
+      .info-row { flex-direction: column; gap: 4px; }
+      .info-row .label { min-width: unset; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <header>
+      <div class="app-badge">
+        <div class="app-icon">🏗️</div>
+        <span class="app-name">Truss</span>
+      </div>
+      <h1>Terms of Service</h1>
+      <p class="meta">Last updated: July 2026 &nbsp;·&nbsp; Effective immediately upon use</p>
+    </header>
+
+    <!-- TL;DR -->
+    <div class="callout">
+      <p><strong>Please read these terms carefully.</strong> By downloading or using Truss, you agree to be bound by these Terms of Service. If you do not agree, do not use the App.</p>
+    </div>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>These Terms of Service ("Terms") govern your use of the Truss iOS application ("App") made available on the Apple App Store. By accessing or using the App, you confirm that you are at least 13 years of age, that you have read and understood these Terms, and that you agree to be bound by them.</p>
+    <p>These Terms constitute a legally binding agreement between you ("User," "you") and the developer of Truss ("we," "us," "our"). If you are using the App on behalf of a business or organization, you represent that you have authority to bind that entity to these Terms.</p>
+
+    <h2>2. License to Use the App</h2>
+    <p>Subject to your compliance with these Terms, we grant you a limited, non-exclusive, non-transferable, revocable license to download, install, and use Truss on an Apple-branded device that you own or control, solely for your personal or professional construction estimation purposes, in accordance with Apple's App Store Terms of Service.</p>
+    <p>You may not:</p>
+    <ul>
+      <li>Copy, modify, or distribute the App or any portion of it</li>
+      <li>Reverse engineer, decompile, or disassemble the App</li>
+      <li>Rent, lease, lend, sell, or sublicense the App to any third party</li>
+      <li>Use the App for any unlawful purpose or in violation of any applicable laws or regulations</li>
+      <li>Remove or alter any proprietary notices or labels on the App</li>
+    </ul>
+
+    <h2>3. Subscriptions</h2>
+
+    <h3>3.1 Subscription Plans</h3>
+    <p>Truss offers optional auto-renewing subscription plans that unlock premium features:</p>
+
+    <div class="info-row">
+      <span class="label">Monthly Plan</span>
+      <span class="value"><strong>$4.99 / month</strong> — billed monthly, renews automatically</span>
+    </div>
+    <div class="info-row">
+      <span class="label">Annual Plan</span>
+      <span class="value"><strong>$29.99 / year</strong> — billed annually, renews automatically</span>
+    </div>
+
+    <h3>3.2 Billing &amp; Auto-Renewal</h3>
+    <p>All subscriptions are processed through Apple In-App Purchase. Payment will be charged to your Apple ID account at confirmation of purchase. Your subscription will automatically renew at the end of each billing period (monthly or annual) at the then-current rate unless you cancel at least 24 hours before the end of the current period.</p>
+    <p>Your Apple ID account will be charged for renewal within 24 hours prior to the end of the current period. You can manage and cancel your subscription at any time in your Apple ID Account Settings. Cancellation takes effect at the end of the current billing period — you will retain access to premium features until that date.</p>
+
+    <h3>3.3 Free Trial (If Offered)</h3>
+    <p>We may, at our sole discretion, offer a free trial period for new subscribers. If a free trial is offered, it will be clearly disclosed before purchase. Any unused portion of a free trial will be forfeited when you purchase a subscription.</p>
+
+    <h3>3.4 Price Changes</h3>
+    <p>We reserve the right to change subscription prices. Price changes will take effect at the start of the next subscription period following the change, and Apple will notify you of any price increase prior to renewal.</p>
+
+    <h2>4. Refund Policy</h2>
+    <p>All purchases and subscription payments are processed by Apple. <strong>We do not issue refunds directly.</strong> All refund requests must be submitted to Apple in accordance with Apple's standard refund policy.</p>
+    <p>To request a refund, please visit <a href="https://reportaproblem.apple.com" target="_blank" rel="noopener">reportaproblem.apple.com</a> or contact Apple Support. We have no ability to override Apple's refund decisions.</p>
+    <p>Cancelling a subscription stops future renewals but does not entitle you to a refund for the current billing period already paid.</p>
+
+    <h2>5. Acceptable Use</h2>
+    <p>Truss is designed to assist with construction material estimation. You agree to use the App only for lawful purposes and in a manner consistent with its intended use. You must not:</p>
+    <ul>
+      <li>Use the App for fraudulent, deceptive, or misleading purposes</li>
+      <li>Attempt to gain unauthorized access to any systems or networks</li>
+      <li>Use the App in any way that could damage, disable, overburden, or impair it</li>
+      <li>Use automated tools, bots, or scripts to access or interact with the App</li>
+      <li>Use the App to violate any local, state, national, or international law or regulation</li>
+      <li>Impersonate any person or entity or misrepresent your affiliation with any person or entity</li>
+    </ul>
+
+    <h2>6. Intellectual Property</h2>
+    <p>The App and all content, features, and functionality — including but not limited to text, graphics, logos, icons, and software — are the exclusive property of the developer and are protected by applicable intellectual property laws. Nothing in these Terms grants you any right, title, or interest in or to the App other than the limited license described in Section 2.</p>
+    <p>All data you create within the App (projects, estimates, material lists) is yours. Because all data is stored locally on your device, we have no access to it.</p>
+
+    <h2>7. Disclaimer of Warranties</h2>
+    <p>THE APP IS PROVIDED ON AN "AS IS" AND "AS AVAILABLE" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+    <p>We do not warrant that the App will be uninterrupted, error-free, or free of viruses or other harmful components. Material estimates and calculations provided by the App are for informational and planning purposes only and should be verified by a qualified professional before use in construction projects. We are not responsible for any loss or damage arising from reliance on the App's output.</p>
+
+    <h2>8. Limitation of Liability</h2>
+    <p>TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL WE BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, CONSEQUENTIAL, OR PUNITIVE DAMAGES — INCLUDING LOSS OF PROFITS, DATA, GOODWILL, OR OTHER INTANGIBLE LOSSES — ARISING OUT OF OR RELATING TO YOUR USE OF OR INABILITY TO USE THE APP.</p>
+    <p>OUR TOTAL LIABILITY TO YOU FOR ALL CLAIMS ARISING FROM OR RELATING TO THESE TERMS OR YOUR USE OF THE APP SHALL NOT EXCEED THE AMOUNT YOU PAID FOR THE APP OR SUBSCRIPTION IN THE 12 MONTHS PRECEDING THE CLAIM, OR $10.00, WHICHEVER IS GREATER.</p>
+
+    <h2>9. Indemnification</h2>
+    <p>You agree to indemnify, defend, and hold harmless the developer and its affiliates, officers, agents, and successors from and against any claims, liabilities, damages, judgments, awards, losses, costs, expenses, or fees (including reasonable attorneys' fees) arising out of or relating to your violation of these Terms or your use of the App.</p>
+
+    <h2>10. Third-Party Services &amp; Apple</h2>
+    <p>These Terms are between you and the developer only, not with Apple, Inc. Apple is not responsible for the App or its content. In the event of any conflict between these Terms and Apple's App Store Terms of Service, Apple's terms govern to the extent of the conflict.</p>
+    <p>Apple has no obligation to provide any maintenance or support services for the App. Apple is a third-party beneficiary of these Terms and, upon your acceptance, Apple will have the right to enforce these Terms against you.</p>
+
+    <h2>11. Termination</h2>
+    <p>We reserve the right to terminate or suspend your access to the App at any time, without notice, for conduct that we believe violates these Terms or is harmful to other users, us, third parties, or the integrity of the App. Upon termination, your license to use the App will immediately cease.</p>
+    <p>You may terminate your use of the App at any time by deleting it from your device and cancelling any active subscription through your Apple ID settings.</p>
+
+    <h2>12. Governing Law</h2>
+    <p>These Terms shall be governed by and construed in accordance with the laws of the United States, without regard to conflict-of-law principles. Any disputes arising out of or relating to these Terms or the App shall be resolved through binding arbitration or in a court of competent jurisdiction, as applicable.</p>
+
+    <h2>13. Changes to These Terms</h2>
+    <p>We reserve the right to modify these Terms at any time. We will indicate the date of the most recent update at the top of this page. Your continued use of the App following the posting of revised Terms constitutes your acceptance of the changes. If you do not agree to the new Terms, you must stop using the App.</p>
+
+    <h2>14. Contact Us</h2>
+    <p>If you have any questions about these Terms of Service, please contact us:</p>
+    <div class="contact-card">
+      <span class="icon">✉️</span>
+      <div>
+        <div class="label-small">Email</div>
+        <a href="mailto:blackbeltsocial@gmail.com">blackbeltsocial@gmail.com</a>
+      </div>
+    </div>
+
+    <footer>
+      <span>© 2026 Truss. All rights reserved.</span>
+      <span>
+        <a href="privacy-policy.html">Privacy Policy</a> &nbsp;·&nbsp;
+        <a href="terms-of-service.html">Terms of Service</a>
+      </span>
+    </footer>
+
+  </div>
+</body>
+</html>

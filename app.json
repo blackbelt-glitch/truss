@@ -1,0 +1,45 @@
+{
+  "expo": {
+    "name": "Truss",
+    "slug": "truss",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "scheme": "truss",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0A0A0A"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.trussapp.estimator",
+      "buildNumber": "1",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "Truss uses your microphone to convert spoken material lists into instant estimates.",
+        "NSSpeechRecognitionUsageDescription": "Truss uses speech recognition to parse your voice estimates.",
+        "UIBackgroundModes": []
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0A0A0A"
+      },
+      "package": "com.trussapp.estimator",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
+    },
+    "plugins": [
+      "expo-speech-recognition"
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "0ebe469e-e084-4a6f-8090-449488769d29"
+      }
+    },
+    "owner": "bloomprint"
+  }
+}

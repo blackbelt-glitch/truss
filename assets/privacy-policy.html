@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Privacy Policy – Truss</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0A0A0A;
+      --surface:   #141414;
+      --border:    #1F1F1F;
+      --text:      #E5E5E5;
+      --muted:     #888888;
+      --amber:     #F59E0B;
+      --amber-dim: #92600A;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   Helvetica, Arial, sans-serif;
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ── */
+    .page-wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 60px 24px 100px;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 32px;
+      margin-bottom: 48px;
+    }
+
+    .app-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+
+    .app-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--amber) 0%, #B45309 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    .app-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    h1 {
+      font-size: clamp(26px, 5vw, 36px);
+      font-weight: 700;
+      color: var(--amber);
+      letter-spacing: -0.5px;
+      margin-bottom: 10px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ── Section headings ── */
+    h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--amber);
+      margin-top: 48px;
+      margin-bottom: 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      letter-spacing: -0.2px;
+    }
+
+    /* ── Body copy ── */
+    p { margin-bottom: 14px; }
+    p:last-of-type { margin-bottom: 0; }
+
+    ul {
+      margin: 10px 0 14px 0;
+      padding-left: 20px;
+    }
+
+    ul li {
+      margin-bottom: 6px;
+    }
+
+    /* ── Highlight box ── */
+    .callout {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--amber);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin: 20px 0;
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .callout strong {
+      color: var(--amber);
+    }
+
+    /* ── Contact card ── */
+    .contact-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 22px 24px;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .contact-card .icon {
+      font-size: 26px;
+      flex-shrink: 0;
+    }
+
+    .contact-card a {
+      color: var(--amber);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .contact-card a:hover { text-decoration: underline; }
+
+    .contact-card .label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 2px;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 72px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    footer a:hover { color: var(--amber); }
+
+    a { color: var(--amber); }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+      .page-wrap { padding: 40px 16px 80px; }
+      footer { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-wrap">
+
+    <header>
+      <div class="app-badge">
+        <div class="app-icon">🏗️</div>
+        <span class="app-name">Truss</span>
+      </div>
+      <h1>Privacy Policy</h1>
+      <p class="meta">Last updated: July 2026 &nbsp;·&nbsp; Effective immediately upon use</p>
+    </header>
+
+    <!-- TL;DR -->
+    <div class="callout">
+      <p><strong>The short version:</strong> Truss does not collect, transmit, or store any of your personal data on external servers. Everything you create stays on your device — always.</p>
+    </div>
+
+    <h2>1. Who We Are</h2>
+    <p>Truss is a construction material estimator application ("App") developed and published as an independent iOS application. References to "we," "us," or "our" in this policy refer to the developer of Truss. For questions, contact us at <a href="mailto:blackbeltsocial@gmail.com">blackbeltsocial@gmail.com</a>.</p>
+
+    <h2>2. Information We Collect</h2>
+    <p><strong>We collect no personal information.</strong> Truss is designed to operate entirely on your device. All data you enter — including projects, measurements, material lists, and estimates — is stored locally using your device's on-device storage and is never transmitted to us or any third party.</p>
+    <p>Specifically, we do <em>not</em> collect:</p>
+    <ul>
+      <li>Your name, email address, or contact details</li>
+      <li>Location or GPS data</li>
+      <li>Device identifiers or advertising IDs</li>
+      <li>Usage analytics or crash reports sent to our servers</li>
+      <li>Payment information (handled entirely by Apple)</li>
+      <li>Any files, photos, or media from your device</li>
+    </ul>
+
+    <h2>3. How Your Data Is Stored</h2>
+    <p>All project data created within Truss is stored locally on your device. This data is subject to Apple's standard iOS sandboxing and security protections. You may delete this data at any time by removing the App from your device.</p>
+    <p>Truss does not operate any servers, databases, or cloud services where user data is stored.</p>
+
+    <h2>4. Third-Party Services</h2>
+    <p>Truss does not integrate with any third-party analytics platforms, advertising networks, or data brokers. We do not share your information with any third parties because we do not collect it in the first place.</p>
+    <p>The only third-party service involved in your use of Truss is <strong>Apple</strong>, which manages:</p>
+    <ul>
+      <li>App distribution via the Apple App Store</li>
+      <li>In-App Purchase and subscription billing</li>
+      <li>Standard iOS system services (e.g., iCloud backup, if enabled by you)</li>
+    </ul>
+    <p>Apple's privacy practices are governed by <a href="https://www.apple.com/legal/privacy/" target="_blank" rel="noopener">Apple's Privacy Policy</a>.</p>
+
+    <h2>5. Subscriptions &amp; Payments</h2>
+    <p>Truss offers an optional subscription (monthly or annual) that unlocks premium features. All subscription billing is processed exclusively by Apple through the App Store. We never see, receive, or store your payment card details or billing information.</p>
+    <p>For questions about charges, receipts, or subscription management, please visit <a href="https://support.apple.com/en-us/HT202039" target="_blank" rel="noopener">Apple's subscription support page</a> or manage your subscriptions directly in your Apple ID settings.</p>
+
+    <h2>6. Children's Privacy</h2>
+    <p>Truss is not directed at children under 13 years of age. We do not knowingly collect personal information from children. Because Truss collects no personal data from anyone, there is no special risk to minors from a data-privacy standpoint.</p>
+
+    <h2>7. Data Security</h2>
+    <p>Because all data remains on your device, it is protected by iOS's built-in security features, including device encryption and app sandboxing. You are responsible for maintaining the security of your device (e.g., using a passcode or Face ID).</p>
+
+    <h2>8. Your Rights</h2>
+    <p>Since we hold none of your personal data on our systems, there is nothing for us to access, correct, export, or delete on your behalf. You can remove all App data at any time simply by deleting Truss from your device.</p>
+    <p>If you are located in the European Economic Area (EEA) or California and have additional questions about your rights under GDPR or CCPA, please reach out to us — though our collection of your data is zero, we are happy to assist.</p>
+
+    <h2>9. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. When we do, we will revise the "Last updated" date at the top of this page and, where appropriate, notify you through an App update. Continued use of Truss after any changes constitutes your acceptance of the revised policy.</p>
+
+    <h2>10. Contact Us</h2>
+    <p>If you have any questions, concerns, or feedback about this Privacy Policy or the App, please contact us:</p>
+    <div class="contact-card">
+      <span class="icon">✉️</span>
+      <div>
+        <div class="label">Email</div>
+        <a href="mailto:blackbeltsocial@gmail.com">blackbeltsocial@gmail.com</a>
+      </div>
+    </div>
+
+    <footer>
+      <span>© 2026 Truss. All rights reserved.</span>
+      <span>
+        <a href="privacy-policy.html">Privacy Policy</a> &nbsp;·&nbsp;
+        <a href="terms-of-service.html">Terms of Service</a>
+      </span>
+    </footer>
+
+  </div>
+</body>
+</html>

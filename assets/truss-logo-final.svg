@@ -1,0 +1,49 @@
+<svg width="1024" height="1024" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="v6main" x1="0%" y1="0%" x2="8%" y2="100%">
+      <stop offset="0%" stop-color="#FEF3C7"/>
+      <stop offset="20%" stop-color="#FCD34D"/>
+      <stop offset="55%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#78350F"/>
+    </linearGradient>
+    <radialGradient id="v6bg" cx="50%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="#180E00"/>
+      <stop offset="70%" stop-color="#0A0700"/>
+      <stop offset="100%" stop-color="#050505"/>
+    </radialGradient>
+    <filter id="v6glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="4" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="1 0.6 0 0 0.05  0.5 0.25 0 0 0  0 0 0 0 0  0 0 0 1 0"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="v6aura" x="-80%" y="-80%" width="260%" height="260%">
+      <feGaussianBlur stdDeviation="22" result="b"/>
+      <feColorMatrix in="b" type="matrix" values="1 0.5 0 0 0  0.35 0.15 0 0 0  0 0 0 0 0  0 0 0 0.55 0"/>
+    </filter>
+  </defs>
+  <rect width="240" height="240" fill="url(#v6bg)"/>
+  <g filter="url(#v6aura)">
+    <rect x="22" y="30" width="196" height="32" rx="6" fill="#F59E0B"/>
+    <rect x="101" y="62" width="15" height="142" fill="#F59E0B"/>
+    <rect x="124" y="62" width="15" height="142" fill="#F59E0B"/>
+  </g>
+  <rect x="22" y="30" width="196" height="32" rx="6" fill="url(#v6main)" filter="url(#v6glow)"/>
+  <rect x="101" y="62" width="15" height="142" fill="url(#v6main)" filter="url(#v6glow)"/>
+  <rect x="124" y="62" width="15" height="142" fill="url(#v6main)" filter="url(#v6glow)"/>
+  <rect x="94" y="192" width="52" height="14" rx="4" fill="url(#v6main)" filter="url(#v6glow)"/>
+  <g stroke="url(#v6main)" stroke-width="3.8" stroke-linecap="round" filter="url(#v6glow)">
+    <line x1="101" y1="86"  x2="139" y2="86"/>
+    <line x1="101" y1="112" x2="139" y2="112"/>
+    <line x1="101" y1="138" x2="139" y2="138"/>
+    <line x1="101" y1="164" x2="139" y2="164"/>
+    <line x1="101" y1="62"  x2="139" y2="86"/>
+    <line x1="139" y1="86"  x2="101" y2="112"/>
+    <line x1="101" y1="112" x2="139" y2="138"/>
+    <line x1="139" y1="138" x2="101" y2="164"/>
+    <line x1="101" y1="164" x2="139" y2="192"/>
+  </g>
+  <rect x="0"   y="62" width="101" height="142" fill="url(#v6bg)"/>
+  <rect x="139" y="62" width="101" height="142" fill="url(#v6bg)"/>
+  <rect x="22" y="30" width="196" height="7" rx="4" fill="white" opacity="0.2"/>
+  <rect x="22" y="58" width="196" height="3" fill="black" opacity="0.25"/>
+</svg>
