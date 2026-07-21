@@ -19,7 +19,7 @@
       "infoPlist": {
         "NSMicrophoneUsageDescription": "Truss uses your microphone to convert spoken material lists into instant estimates.",
         "NSSpeechRecognitionUsageDescription": "Truss uses speech recognition to parse your voice estimates.",
-        "UIBackgroundModes": []
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
