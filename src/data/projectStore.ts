@@ -101,6 +101,17 @@ export async function deleteProject(id: string): Promise<Project[]> {
   return filtered;
 }
 
+export async function renameProject(id: string, name: string): Promise<Project[]> {
+  const projects = await loadProjects();
+  const idx = projects.findIndex((p) => p.id === id);
+  if (idx >= 0) {
+    projects[idx].name = name;
+    projects[idx].updatedAt = Date.now();
+    await saveProjects(projects);
+  }
+  return projects;
+}
+
 export function createProject(name: string): Project {
   const now = Date.now();
   return {

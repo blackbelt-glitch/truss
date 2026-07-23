@@ -31,6 +31,7 @@ import {
   loadProjects,
   saveProject,
   createProject,
+  renameProject,
 } from '../data/projectStore';
 
 type Tab = 'area' | 'materials' | 'cost' | 'convert';
@@ -45,6 +46,8 @@ export default function CalculatorScreen() {
     calculateMaterial(materials[1], 87),
   ]);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameText, setRenameText] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [activeScreen, setActiveScreen] = useState<'calc' | 'projects' | 'export' | 'settings'>('calc');
   const [showSettings, setShowSettings] = useState(false);
@@ -187,9 +190,18 @@ export default function CalculatorScreen() {
         >
           <Text style={styles.navBtnText}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.navTitle}>{projectName}</Text>
+        <TouchableOpacity onPress={() => { haptic(); setRenameText(projectName); setShowRenameModal(true); }} style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={styles.navTitle}>{projectName}</Text>
+        </TouchableOpacity>
         <View style={styles.navIcons}>
-          <TouchableOpacity style={styles.navBtn} onPress={() => { haptic(); setShowSearch((v) => !v); }}>
+          <TouchableOpacity
+            style={styles.navBtn}
+            onPress={() => {
+              haptic();
+              if (activeTab !== 'materials') setActiveTab('materials');
+              setShowSearch((v) => !v);
+            }}
+          >
             <Text style={styles.navBtnText}>⌕</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.navBtn, { borderColor: colors.accent, backgroundColor: colors.accentGlow }]} onPress={() => { haptic(); setShowAddModal(true); }}>
@@ -374,7 +386,9 @@ export default function CalculatorScreen() {
         style={styles.voiceBtn}
         onPress={() => { haptic(Haptics.ImpactFeedbackStyle.Medium); navigation.navigate('Voice'); }}
       >
-        <Text style={styles.voiceIcon}>🎙</Text>
+        <View style={styles.voiceIconWrap}>
+          <Text style={styles.voiceIcon}>🎤</Text>
+        </View>
       </Pressable>
 
       {/* Bottom Tab Bar */}
@@ -432,7 +446,55 @@ export default function CalculatorScreen() {
 
       {/* Add Material Modal */}
       <Modal visible={showAddModal} animationType="slide" transparent={true}>
-        <AddMaterialModal onAdd={addMaterial} onClose={() => setShowAddModal(false)} />
+        <AddMaterialModal
+          onAdd={addMaterial}
+          onClose={() => setShowAddModal(false)}
+          onVoice={() => navigation.navigate('Voice')}
+        />
+      </Modal>
+
+      {/* Rename Project Modal */}
+      <Modal visible={showRenameModal} animationType="fade" transparent={true} onRequestClose={() => setShowRenameModal(false)}>
+        <Pressable style={styles.modalOverlay} onPress={() => { Keyboard.dismiss(); setShowRenameModal(false); }}>
+          <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>✏️  Rename Project</Text>
+              <TouchableOpacity onPress={() => setShowRenameModal(false)} style={styles.modalCloseBtn}>
+                <Text style={styles.modalCloseText}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.modalLabel}>Project Name</Text>
+            <TextInput
+              style={styles.modalInput}
+              value={renameText}
+              onChangeText={setRenameText}
+              placeholder="Project name"
+              placeholderTextColor={colors.textDimmer}
+              autoFocus
+              selectTextOnFocus
+              returnKeyType="done"
+              onSubmitEditing={async () => {
+                if (!renameText.trim() || !project) return;
+                const updated = await renameProject(project.id, renameText.trim());
+                const refreshed = updated.find((p) => p.id === project.id);
+                if (refreshed) setProject(refreshed);
+                setShowRenameModal(false);
+              }}
+            />
+            <TouchableOpacity
+              style={styles.modalSaveBtn}
+              onPress={async () => {
+                if (!renameText.trim() || !project) return;
+                const updated = await renameProject(project.id, renameText.trim());
+                const refreshed = updated.find((p) => p.id === project.id);
+                if (refreshed) setProject(refreshed);
+                setShowRenameModal(false);
+              }}
+            >
+              <Text style={styles.modalSaveText}>Save</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
       </Modal>
     </SafeAreaView>
   );
@@ -606,8 +668,10 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
   const [name, setName] = useState(calc.customName || calc.material.name);
   return (
     <Modal visible={true} animationType="slide" transparent={true} onRequestClose={onClose}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{calc.material.icon} Edit Material</Text>
             <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
@@ -615,46 +679,80 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
             </TouchableOpacity>
           </View>
           <Text style={styles.modalLabel}>Material Name</Text>
-          <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="e.g. Red Oak Hardwood" placeholderTextColor={colors.textDimmer} returnKeyType="next" />
+          <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="e.g. Red Oak Hardwood" placeholderTextColor={colors.textDimmer} returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
           <Text style={styles.modalLabel}>Quantity ({calc.material.unit})</Text>
-          <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={() => onSave(parseFloat(qty) || 0, name)} />
+          <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={() => { Keyboard.dismiss(); onSave(parseFloat(qty) || 0, name); }} />
           <View style={styles.modalPreview}>
             <Text style={styles.modalPreviewLabel}>Boxes needed: {calc.material.coveragePerBox ? Math.ceil((parseFloat(qty) || 0) * (1 + calc.wastePercent / 100) / calc.material.coveragePerBox) : Math.ceil(parseFloat(qty) || 0)}</Text>
             <Text style={styles.modalPreviewLabel}>Subtotal: {formatCurrency(calc.material.coveragePerBox ? (Math.ceil((parseFloat(qty) || 0) * (1 + calc.wastePercent / 100) / calc.material.coveragePerBox)) * (calc.material.pricePerBox || 0) : (Math.ceil(parseFloat(qty) || 0)) * (calc.material.pricePerUnit || 0))}</Text>
           </View>
           <View style={styles.modalActions}>
             <TouchableOpacity style={styles.modalDeleteBtn} onPress={onDelete}><Text style={styles.modalDeleteText}>Delete</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalSaveBtn} onPress={() => onSave(parseFloat(qty) || 0, name)}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.modalSaveBtn} onPress={() => { Keyboard.dismiss(); onSave(parseFloat(qty) || 0, name); }}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
           </View>
         </View>
-      </KeyboardAvoidingView>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
+      </TouchableWithoutFeedback>
     </Modal>
   );
 }
 
 // Add Material Modal
-function AddMaterialModal({ onAdd, onClose }: {
+function AddMaterialModal({ onAdd, onClose, onVoice }: {
   onAdd: (material: Material, quantity: number) => void;
   onClose: () => void;
+  onVoice: () => void;
 }) {
   const [selected, setSelected] = useState<Material | null>(null);
   const [qty, setQty] = useState('');
+  const [filter, setFilter] = useState('');
   const categories = [...new Set(materials.map((m) => m.category))];
+  const filteredMaterials = filter
+    ? materials.filter((m) =>
+        m.name.toLowerCase().includes(filter.toLowerCase()) ||
+        m.category.toLowerCase().includes(filter.toLowerCase())
+      )
+    : materials;
+  const filteredCategories = [...new Set(filteredMaterials.map((m) => m.category))];
   return (
     <Pressable style={styles.modalOverlay} onPress={onClose}>
       <Pressable style={styles.modalContentLarge} onPress={(e) => e.stopPropagation()}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Add Material</Text>
-          <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
-            <Text style={styles.modalCloseText}>✕</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: spacing.sm }}>
+            <TouchableOpacity onPress={() => { onClose(); onVoice(); }} style={[styles.modalCloseBtn, { backgroundColor: colors.accent, borderColor: colors.accent }]}>
+              <Text style={[styles.modalCloseText, { color: colors.bg, fontSize: 18 }]}>🎤</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
+              <Text style={styles.modalCloseText}>✕</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         {!selected && (
+          <>
+          <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, borderRadius: 12, paddingHorizontal: spacing.md, paddingVertical: 4, marginBottom: spacing.md, borderWidth: 1, borderColor: colors.border }}>
+            <Text style={{ fontSize: 16, color: colors.textDimmer, marginRight: spacing.sm }}>⌕</Text>
+            <TextInput
+              style={{ flex: 1, color: colors.text, fontSize: 15, paddingVertical: 10 }}
+              value={filter}
+              onChangeText={setFilter}
+              placeholder="Search 18 materials..."
+              placeholderTextColor={colors.textDimmer}
+              autoCorrect={false}
+              returnKeyType="done"
+            />
+            {filter.length > 0 && (
+              <TouchableOpacity onPress={() => setFilter('')}>
+                <Text style={{ color: colors.textDimmer, fontSize: 16, padding: 4 }}>✕</Text>
+              </TouchableOpacity>
+            )}
+          </View>
           <ScrollView showsVerticalScrollIndicator={false}>
-            {categories.map((cat) => (
+            {filteredCategories.map((cat) => (
               <View key={cat} style={styles.categoryGroup}>
                 <Text style={styles.categoryLabel}>{cat}</Text>
-                {materials.filter((m) => m.category === cat).map((m) => (
+                {filteredMaterials.filter((m) => m.category === cat).map((m) => (
                   <TouchableOpacity key={m.id} style={styles.materialOption} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelected(m); }}>
                     <Text style={styles.materialOptionIcon}>{m.icon}</Text>
                     <Text style={styles.materialOptionName}>{m.name}</Text>
@@ -663,7 +761,13 @@ function AddMaterialModal({ onAdd, onClose }: {
                 ))}
               </View>
             ))}
+            {filteredCategories.length === 0 && (
+              <View style={{ alignItems: 'center', paddingVertical: 40 }}>
+                <Text style={{ color: colors.textDimmer, fontSize: 15 }}>No materials match "{filter}"</Text>
+              </View>
+            )}
           </ScrollView>
+          </>
         )}
         {selected && (
           <View>
@@ -689,8 +793,8 @@ const styles = StyleSheet.create({
   nav: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: spacing.xl, paddingTop: spacing.sm, paddingBottom: spacing.lg },
   navTitle: { ...typography.title, color: colors.text },
   navIcons: { flexDirection: 'row', gap: spacing.md },
-  navBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
-  navBtnText: { fontSize: 16, color: colors.textDim },
+  navBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  navBtnText: { fontSize: 18, color: colors.text, fontWeight: '500' },
   display: { paddingHorizontal: spacing.xxl, paddingBottom: spacing.xxl },
   displayLabel: { ...typography.label, color: colors.textDimmer, marginBottom: spacing.sm },
   displayValue: { fontSize: 48, fontWeight: '700', color: colors.text, letterSpacing: -2, lineHeight: 52, fontVariant: ['tabular-nums'] as any },
@@ -750,8 +854,9 @@ const styles = StyleSheet.create({
   fractionCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.lg, marginTop: spacing.md },
   fractionLabel: { ...typography.label, color: colors.textDimmer, marginBottom: spacing.sm },
   fractionValue: { fontSize: 24, fontWeight: '600', color: colors.text, letterSpacing: -0.5 },
-  voiceBtn: { position: 'absolute', bottom: 100, right: spacing.xxl, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
-  voiceIcon: { fontSize: 24 },
+  voiceBtn: { position: 'absolute', bottom: 130, right: spacing.xxl, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8, zIndex: 10 },
+  voiceIconWrap: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
+  voiceIcon: { fontSize: 28, lineHeight: 32, textAlign: 'center', includeFontPadding: false, marginTop: -2 },
   bottomBar: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: spacing.md, paddingBottom: spacing.xxl + 4, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bg },
   bottomItem: { alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 4 },
   bottomIcon: { fontSize: 26 },

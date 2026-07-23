@@ -223,10 +223,12 @@ export default function VoiceScreen() {
       {/* Orb — shrinks when results are showing */}
       <View style={[styles.orbSection, hasResults && styles.orbSectionCompact]}>
         <Pressable style={[styles.voiceOrb, hasResults && styles.voiceOrbSmall, isRecording && styles.voiceOrbRecording]} onPress={toggleRecording}>
-          {isProcessing
-            ? <ActivityIndicator size="large" color="white" />
-            : <Text style={[styles.voiceIcon, hasResults && styles.voiceIconSmall]}>🎙</Text>
-          }
+          <View style={styles.voiceOrbInner}>
+            {isProcessing
+              ? <ActivityIndicator size="large" color="white" />
+              : <Text style={[styles.voiceIcon, hasResults && styles.voiceIconSmall]}>🎤</Text>
+            }
+          </View>
         </Pressable>
         <Text style={styles.voiceStatus}>
           {isProcessing ? 'Processing audio...' : isRecording ? '🔴 Recording... Tap to stop' : hasResults ? 'Tap ↺ to reset' : 'TAP MIC TO START'}
@@ -322,8 +324,8 @@ const styles = StyleSheet.create({
   },
   navBtnText: { fontSize: 16, color: colors.textDim },
 
-  orbSection: { alignItems: 'center', paddingTop: spacing.xxl, paddingBottom: spacing.xl },
-  orbSectionCompact: { paddingTop: spacing.md, paddingBottom: spacing.md },
+  orbSection: { alignItems: 'center', paddingTop: spacing.xl, paddingBottom: spacing.lg },
+  orbSectionCompact: { paddingTop: spacing.md, paddingBottom: spacing.sm },
 
   voiceOrb: {
     width: 140, height: 140, borderRadius: 70, backgroundColor: colors.accent,
@@ -332,10 +334,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35, shadowRadius: 30, elevation: 10,
     overflow: 'visible',
   },
+  voiceOrbInner: { width: 100, height: 100, alignItems: 'center', justifyContent: 'center' },
   voiceOrbSmall: { width: 72, height: 72, borderRadius: 36, marginBottom: spacing.sm },
   voiceOrbRecording: { backgroundColor: '#ef4444', shadowColor: '#ef4444' },
-  voiceIcon: { fontSize: 56, textAlign: 'center', lineHeight: 64 },
-  voiceIconSmall: { fontSize: 28, lineHeight: 32 },
+  voiceIcon: { fontSize: 70, textAlign: 'center', includeFontPadding: false },
+  voiceIconSmall: { fontSize: 36, textAlign: 'center', includeFontPadding: false },
   voiceStatus: {
     fontSize: 12, fontWeight: '600', color: colors.accent,
     textTransform: 'uppercase', letterSpacing: 1.5,
