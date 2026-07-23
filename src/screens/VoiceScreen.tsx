@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,12 +9,15 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
+import { Audio } from 'expo-av';
 import { colors, spacing, radius, typography } from '../theme';
 import { materials, calculateMaterial, formatCurrency, MaterialCalculation } from '../data/materials';
+import { transcribeAudio } from '../services/whisper';
 
 interface ParsedItem {
   icon: string;
@@ -32,8 +35,62 @@ export default function VoiceScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [manualInput, setManualInput] = useState('');
+  const [isRecording, setIsRecording] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
 
   const haptic = (style = Haptics.ImpactFeedbackStyle.Light) => Haptics.impactAsync(style);
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      // Stop recording
+      haptic(Haptics.ImpactFeedbackStyle.Medium);
+      try {
+        await recording?.stopAndUnloadAsync();
+        const uri = recording?.getURI();
+        setRecording(null);
+        setIsRecording(false);
+
+        if (uri) {
+          setIsProcessing(true);
+          setTranscript('Processing audio...');
+          const text = await transcribeAudio(uri);
+          setTranscript(text);
+          parseTranscript(text);
+        }
+      } catch (e: any) {
+        setError('Recording failed: ' + e.message);
+        setIsRecording(false);
+      }
+      return;
+    }
+
+    // Start recording
+    haptic(Haptics.ImpactFeedbackStyle.Medium);
+    try {
+      const permResult = await Audio.requestPermissionsAsync();
+      console.log('Mic permission:', permResult);
+      if (permResult.status !== 'granted') {
+        setError('Microphone permission denied. Enable it in iPhone Settings → Truss → Microphone');
+        return;
+      }
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      console.log('Recording started:', newRecording);
+      setRecording(newRecording);
+      setIsRecording(true);
+      setError(null);
+      setTranscript('');
+      setParsedItems([]);
+    } catch (e: any) {
+      console.error('Recording error:', e);
+      setError('Recording error: ' + e.message);
+    }
+  };
 
   const parseManual = () => {
     if (!manualInput.trim()) return;
@@ -165,14 +222,14 @@ export default function VoiceScreen() {
 
       {/* Orb — shrinks when results are showing */}
       <View style={[styles.orbSection, hasResults && styles.orbSectionCompact]}>
-        <Pressable style={[styles.voiceOrb, hasResults && styles.voiceOrbSmall]} onPress={loadDemo}>
+        <Pressable style={[styles.voiceOrb, hasResults && styles.voiceOrbSmall, isRecording && styles.voiceOrbRecording]} onPress={toggleRecording}>
           {isProcessing
             ? <ActivityIndicator size="large" color="white" />
             : <Text style={[styles.voiceIcon, hasResults && styles.voiceIconSmall]}>🎙</Text>
           }
         </Pressable>
         <Text style={styles.voiceStatus}>
-          {isProcessing ? 'Parsing...' : hasResults ? 'Tap ↺ to reset' : 'TAP MIC TO START'}
+          {isProcessing ? 'Processing audio...' : isRecording ? '🔴 Recording... Tap to stop' : hasResults ? 'Tap ↺ to reset' : 'TAP MIC TO START'}
         </Text>
       </View>
 
@@ -273,10 +330,12 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center', marginBottom: spacing.lg,
     shadowColor: colors.accent, shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.35, shadowRadius: 30, elevation: 10,
+    overflow: 'visible',
   },
   voiceOrbSmall: { width: 72, height: 72, borderRadius: 36, marginBottom: spacing.sm },
-  voiceIcon: { fontSize: 56 },
-  voiceIconSmall: { fontSize: 28 },
+  voiceOrbRecording: { backgroundColor: '#ef4444', shadowColor: '#ef4444' },
+  voiceIcon: { fontSize: 56, textAlign: 'center', lineHeight: 64 },
+  voiceIconSmall: { fontSize: 28, lineHeight: 32 },
   voiceStatus: {
     fontSize: 12, fontWeight: '600', color: colors.accent,
     textTransform: 'uppercase', letterSpacing: 1.5,

@@ -118,11 +118,18 @@ export default function CalculatorScreen() {
       `ESTIMATE: ${projectName}`,
       `Date: ${new Date().toLocaleDateString()}`,
       ``,
+      `MATERIALS`,
       ...calculations.map((c) =>
         `${c.material.icon} ${c.material.name}: ${c.quantity} ${c.material.unit} → ${c.boxesNeeded} units → ${formatCurrency(c.subtotal)}`
       ),
       ``,
-      `TOTAL: ${formatCurrency(totalEstimate)}`,
+      `COST BREAKDOWN`,
+      `Materials: ${formatCurrency(totalEstimate)}`,
+      ...(parseFloat(laborRate) > 0 ? [`Labor (${laborRate}h × ${hours}h): ${formatCurrency(laborCost)}`] : []),
+      ...(parseFloat(markup) > 0 ? [`Markup (${markup}%): ${formatCurrency(markupCost)}`] : []),
+      ...(parseFloat(tax) > 0 ? [`Tax (${tax}%): ${formatCurrency(taxCost)}`] : []),
+      `────────────────────`,
+      `GRAND TOTAL: ${formatCurrency(grandTotal)}`,
     ];
     try {
       await Share.share({ message: lines.join('\n'), title: `${projectName} Estimate` });
@@ -138,9 +145,14 @@ export default function CalculatorScreen() {
     { id: 'convert', label: 'Convert' },
   ];
 
-  const updateQuantity = (index: number, quantity: number) => {
+  const updateQuantity = (index: number, quantity: number, customName?: string) => {
     const calc = calculations[index];
     const newCalc = calculateMaterial(calc.material, quantity, calc.wastePercent);
+    if (customName && customName.trim() !== calc.material.name) {
+      newCalc.customName = customName.trim();
+    } else {
+      newCalc.customName = undefined;
+    }
     const newCalcs = [...calculations];
     newCalcs[index] = newCalc;
     setCalculations(newCalcs);
@@ -180,8 +192,8 @@ export default function CalculatorScreen() {
           <TouchableOpacity style={styles.navBtn} onPress={() => { haptic(); setShowSearch((v) => !v); }}>
             <Text style={styles.navBtnText}>⌕</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navBtn} onPress={() => { haptic(); setShowAddModal(true); }}>
-            <Text style={styles.navBtnText}>+</Text>
+          <TouchableOpacity style={[styles.navBtn, { borderColor: colors.accent, backgroundColor: colors.accentGlow }]} onPress={() => { haptic(); setShowAddModal(true); }}>
+            <Text style={[styles.navBtnText, { color: colors.accent, fontWeight: '700', fontSize: 18 }]}>+</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -237,6 +249,7 @@ export default function CalculatorScreen() {
 
       {/* Content based on tab */}
       {activeTab === 'materials' && (
+        <>
         <ScrollView style={styles.inputArea} showsVerticalScrollIndicator={false}>
           {calculations.length === 0 && (
             <View style={styles.emptyState}>
@@ -287,7 +300,7 @@ export default function CalculatorScreen() {
             </View>
           )}
           {calculations
-            .filter((calc) => !searchQuery || calc.material.name.toLowerCase().includes(searchQuery.toLowerCase()))
+            .filter((calc) => !searchQuery || (calc.customName || calc.material.name).toLowerCase().includes(searchQuery.toLowerCase()))
             .map((calc, index) => (
             <TouchableOpacity
               key={index}
@@ -297,7 +310,7 @@ export default function CalculatorScreen() {
             >
               <View style={styles.materialHeader}>
                 <Text style={styles.materialIcon}>{calc.material.icon}</Text>
-                <Text style={styles.materialName}>{calc.material.name}</Text>
+                <Text style={styles.materialName}>{calc.customName || calc.material.name}</Text>
                 <View style={styles.materialBadge}>
                   <Text style={styles.materialBadgeText}>{calc.material.category}</Text>
                 </View>
@@ -329,6 +342,15 @@ export default function CalculatorScreen() {
             </TouchableOpacity>
           ))}
         </ScrollView>
+
+        <Pressable
+          style={styles.addBtn}
+          onPress={() => { haptic(); setShowAddModal(true); }}
+        >
+          <Text style={styles.addBtnIcon}>+</Text>
+          <Text style={styles.addBtnText}>Add Material</Text>
+        </Pressable>
+        </>
       )}
 
       {activeTab === 'area' && <AreaView calculations={calculations} onEdit={(i) => { haptic(); setEditingIndex(i); setActiveTab('materials'); }} />}
@@ -403,7 +425,7 @@ export default function CalculatorScreen() {
         <EditMaterialModal
           calc={calculations[editingIndex]}
           onClose={() => setEditingIndex(null)}
-          onSave={(qty) => { updateQuantity(editingIndex, qty); setEditingIndex(null); }}
+          onSave={(qty, name) => { updateQuantity(editingIndex, qty, name); setEditingIndex(null); }}
           onDelete={() => { removeMaterial(editingIndex); setEditingIndex(null); }}
         />
       )}
@@ -430,8 +452,7 @@ function AreaView({ calculations, onEdit }: { calculations: MaterialCalculation[
         <TouchableOpacity key={i} style={[styles.materialCard, { borderWidth: 1, borderColor: colors.border }]} onPress={() => onEdit(i)} activeOpacity={0.7}>
           <View style={styles.materialHeader}>
             <Text style={styles.materialIcon}>{calc.material.icon}</Text>
-            <Text style={styles.materialName}>{calc.material.name}</Text>
-            <Text style={{ color: colors.accent, fontSize: 13 }}>Tap to edit →</Text>
+            <Text style={styles.materialName}>{calc.customName || calc.material.name}</Text>
           </View>
           <View style={styles.materialRow}>
             <Text style={styles.materialLabel}>Area</Text>
@@ -574,31 +595,36 @@ function decimalToFractionSimple(decimal: number): string {
   return decimal.toFixed(3);
 }
 
-// Edit Material Modal
+// Edit Material Modal — change quantity and custom name
 function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
   calc: MaterialCalculation;
   onClose: () => void;
-  onSave: (qty: number) => void;
+  onSave: (qty: number, name?: string) => void;
   onDelete: () => void;
 }) {
   const [qty, setQty] = useState(String(calc.quantity));
+  const [name, setName] = useState(calc.customName || calc.material.name);
   return (
     <Modal visible={true} animationType="slide" transparent={true} onRequestClose={onClose}>
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{calc.material.icon} {calc.material.name}</Text>
-            <TouchableOpacity onPress={onClose}><Text style={styles.modalCloseText}>✕</Text></TouchableOpacity>
+            <Text style={styles.modalTitle}>{calc.material.icon} Edit Material</Text>
+            <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
+              <Text style={styles.modalCloseText}>✕</Text>
+            </TouchableOpacity>
           </View>
+          <Text style={styles.modalLabel}>Material Name</Text>
+          <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="e.g. Red Oak Hardwood" placeholderTextColor={colors.textDimmer} returnKeyType="next" />
           <Text style={styles.modalLabel}>Quantity ({calc.material.unit})</Text>
-          <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus autoFocus returnKeyType="done" onSubmitEditing={() => onSave(parseFloat(qty) || 0)} />
+          <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={() => onSave(parseFloat(qty) || 0, name)} />
           <View style={styles.modalPreview}>
             <Text style={styles.modalPreviewLabel}>Boxes needed: {calc.material.coveragePerBox ? Math.ceil((parseFloat(qty) || 0) * (1 + calc.wastePercent / 100) / calc.material.coveragePerBox) : Math.ceil(parseFloat(qty) || 0)}</Text>
             <Text style={styles.modalPreviewLabel}>Subtotal: {formatCurrency(calc.material.coveragePerBox ? (Math.ceil((parseFloat(qty) || 0) * (1 + calc.wastePercent / 100) / calc.material.coveragePerBox)) * (calc.material.pricePerBox || 0) : (Math.ceil(parseFloat(qty) || 0)) * (calc.material.pricePerUnit || 0))}</Text>
           </View>
           <View style={styles.modalActions}>
             <TouchableOpacity style={styles.modalDeleteBtn} onPress={onDelete}><Text style={styles.modalDeleteText}>Delete</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalSaveBtn} onPress={() => onSave(parseFloat(qty) || 0)}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.modalSaveBtn} onPress={() => onSave(parseFloat(qty) || 0, name)}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -615,11 +641,13 @@ function AddMaterialModal({ onAdd, onClose }: {
   const [qty, setQty] = useState('');
   const categories = [...new Set(materials.map((m) => m.category))];
   return (
-    <View style={styles.modalOverlay}>
-      <View style={styles.modalContentLarge}>
+    <Pressable style={styles.modalOverlay} onPress={onClose}>
+      <Pressable style={styles.modalContentLarge} onPress={(e) => e.stopPropagation()}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Add Material</Text>
-          <TouchableOpacity onPress={onClose}><Text style={styles.modalCloseText}>✕</Text></TouchableOpacity>
+          <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
+            <Text style={styles.modalCloseText}>✕</Text>
+          </TouchableOpacity>
         </View>
         {!selected && (
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -651,8 +679,8 @@ function AddMaterialModal({ onAdd, onClose }: {
             </View>
           </View>
         )}
-      </View>
-    </View>
+      </Pressable>
+    </Pressable>
   );
 }
 
@@ -724,16 +752,17 @@ const styles = StyleSheet.create({
   fractionValue: { fontSize: 24, fontWeight: '600', color: colors.text, letterSpacing: -0.5 },
   voiceBtn: { position: 'absolute', bottom: 100, right: spacing.xxl, width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
   voiceIcon: { fontSize: 24 },
-  bottomBar: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: spacing.sm, paddingBottom: spacing.xxl, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bg },
-  bottomItem: { alignItems: 'center', gap: 4 },
-  bottomIcon: { fontSize: 20 },
-  bottomLabel: { fontSize: 10, fontWeight: '500', color: colors.textDimmer },
+  bottomBar: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: spacing.md, paddingBottom: spacing.xxl + 4, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bg },
+  bottomItem: { alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 4 },
+  bottomIcon: { fontSize: 26 },
+  bottomLabel: { fontSize: 12, fontWeight: '500', color: colors.textDimmer },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xxl, maxHeight: '60%' },
   modalContentLarge: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xxl, maxHeight: '80%', flex: 1 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xl },
   modalTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
-  modalCloseText: { fontSize: 20, color: colors.textDim },
+  modalCloseText: { fontSize: 22, color: colors.text, fontWeight: '600' },
+  modalCloseBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2A2A2A', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
   modalLabel: { fontSize: 13, fontWeight: '500', color: colors.textDim, marginBottom: spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 },
   modalInput: { fontSize: 24, fontWeight: '600', color: colors.text, backgroundColor: colors.surface2, borderRadius: radius.md, padding: 16, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.lg, fontVariant: ['tabular-nums'] as any },
   modalPreview: { backgroundColor: colors.bg, borderRadius: radius.md, padding: spacing.lg, marginBottom: spacing.lg },
@@ -757,6 +786,9 @@ const styles = StyleSheet.create({
   costTotalValue: { fontSize: 28, fontWeight: '800', color: colors.accent, fontVariant: ['tabular-nums'] as any },
   doneBtn: { marginTop: spacing.lg, alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface2, borderRadius: radius.md },
   doneBtnText: { color: colors.accent, fontWeight: '600', fontSize: 15 },
+  addBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 16, marginHorizontal: spacing.xl, marginBottom: 90, shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+  addBtnIcon: { fontSize: 22, fontWeight: '700', color: colors.bg, lineHeight: 24 },
+  addBtnText: { fontSize: 17, fontWeight: '700', color: colors.bg, letterSpacing: -0.3 },
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: spacing.md, marginBottom: spacing.sm, borderRadius: radius.md, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: colors.border },
   searchInput: { flex: 1, color: colors.text, fontSize: 15, paddingVertical: spacing.sm },
   searchClose: { color: colors.textDim, fontSize: 16, paddingLeft: spacing.sm },

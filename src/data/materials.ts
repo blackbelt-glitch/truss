@@ -194,11 +194,12 @@ export const materials: Material[] = [
 // Calculate material quantities and cost
 export interface MaterialCalculation {
   material: Material;
-  quantity: number; // input area or length
+  quantity: number;
   wastePercent: number;
   boxesNeeded: number;
-  totalUnits: number; // with waste
+  totalUnits: number;
   subtotal: number;
+  customName?: string;
 }
 
 export function calculateMaterial(
