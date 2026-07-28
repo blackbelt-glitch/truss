@@ -8,6 +8,7 @@ import CalculatorScreen from './src/screens/CalculatorScreen';
 import ProjectsScreen from './src/screens/ProjectsScreen';
 import VoiceScreen from './src/screens/VoiceScreen';
 import PaywallScreen from './src/screens/PaywallScreen';
+import StairScreen from './src/screens/StairScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +38,7 @@ export default function App() {
           <Stack.Screen name="Projects" component={ProjectsScreen} />
           <Stack.Screen name="Calculator" component={CalculatorScreen} />
           <Stack.Screen name="Voice" component={VoiceScreen} />
+          <Stack.Screen name="Stair" component={StairScreen} />
           <Stack.Screen name="Paywall" component={PaywallScreen} options={{ presentation: 'modal' }} />
         </Stack.Navigator>
       </NavigationContainer>

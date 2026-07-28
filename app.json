@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "scheme": "truss",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
@@ -33,7 +32,6 @@
       ]
     },
     "plugins": [
-      "expo-dev-client",
       "expo-speech-recognition"
     ],
     "extra": {

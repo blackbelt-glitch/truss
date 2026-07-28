@@ -219,11 +219,10 @@ export default function CalculatorScreen() {
             onChangeText={setSearchQuery}
             placeholder="Search materials..."
             placeholderTextColor={colors.textDimmer}
-            autoFocus
-            returnKeyType="done"
-            onSubmitEditing={() => setShowSearch(false)}
+            returnKeyType="search"
+            onSubmitEditing={Keyboard.dismiss}
           />
-          <TouchableOpacity onPress={() => { setShowSearch(false); setSearchQuery(''); }}>
+          <TouchableOpacity onPress={() => { setShowSearch(false); setSearchQuery(''); Keyboard.dismiss(); }} style={{ padding: 8 }}>
             <Text style={styles.searchClose}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -248,14 +247,14 @@ export default function CalculatorScreen() {
       <View style={styles.modeTabs}>
         {tabs.map((tab) => (
           <Pressable
-            key={tab.id}
-            style={[styles.modeTab, activeTab === tab.id && styles.modeTabActive]}
-            onPress={() => { haptic(); setActiveTab(tab.id); }}
-          >
-            <Text style={[styles.modeTabText, activeTab === tab.id && styles.modeTabTextActive]}>
-              {tab.label}
-            </Text>
-          </Pressable>
+                        key={tab.id}
+                        style={[styles.modeTab, activeTab === tab.id && styles.modeTabActive]}
+                        onPress={() => { haptic(); setActiveTab(tab.id); setShowSearch(false); }}
+                      >
+                        <Text style={[styles.modeTabText, activeTab === tab.id && styles.modeTabTextActive]}>
+                          {tab.label}
+                        </Text>
+                      </Pressable>
         ))}
       </View>
 
@@ -313,12 +312,14 @@ export default function CalculatorScreen() {
           )}
           {calculations
             .filter((calc) => !searchQuery || (calc.customName || calc.material.name).toLowerCase().includes(searchQuery.toLowerCase()))
-            .map((calc, index) => (
+            .map((calc) => {
+              const realIndex = calculations.indexOf(calc);
+              return (
             <TouchableOpacity
-              key={index}
+              key={realIndex}
               style={styles.materialCard}
-              onPress={() => { haptic(); setEditingIndex(index); }}
-              onLongPress={() => removeMaterial(index)}
+              onPress={() => { haptic(); setEditingIndex(realIndex); }}
+              onLongPress={() => removeMaterial(realIndex)}
             >
               <View style={styles.materialHeader}>
                 <Text style={styles.materialIcon}>{calc.material.icon}</Text>
@@ -352,7 +353,8 @@ export default function CalculatorScreen() {
                 <Text style={styles.materialTotalValue}>{formatCurrency(calc.subtotal)}</Text>
               </View>
             </TouchableOpacity>
-          ))}
+              );
+            })}
         </ScrollView>
 
         <Pressable
@@ -404,6 +406,10 @@ export default function CalculatorScreen() {
         <Pressable style={styles.bottomItem} onPress={handleExport}>
           <Text style={styles.bottomIcon}>📤</Text>
           <Text style={styles.bottomLabel}>Export</Text>
+        </Pressable>
+        <Pressable style={styles.bottomItem} onPress={() => { haptic(Haptics.ImpactFeedbackStyle.Medium); navigation.navigate('Stair'); }}>
+          <Text style={styles.bottomIcon}>🪜</Text>
+          <Text style={styles.bottomLabel}>Stairs</Text>
         </Pressable>
         <Pressable style={styles.bottomItem} onPress={() => { haptic(); setActiveScreen('settings'); navigation.navigate('Paywall'); }}>
           <Text style={[styles.bottomIcon, activeScreen === 'settings' && { color: colors.accent }]}>⚙️</Text>
@@ -896,5 +902,5 @@ const styles = StyleSheet.create({
   addBtnText: { fontSize: 17, fontWeight: '700', color: colors.bg, letterSpacing: -0.3 },
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: spacing.md, marginBottom: spacing.sm, borderRadius: radius.md, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: colors.border },
   searchInput: { flex: 1, color: colors.text, fontSize: 15, paddingVertical: spacing.sm },
-  searchClose: { color: colors.textDim, fontSize: 16, paddingLeft: spacing.sm },
+  searchClose: { color: colors.text, fontSize: 20, fontWeight: '600' },
 });
