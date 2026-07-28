@@ -357,13 +357,22 @@ export default function CalculatorScreen() {
             })}
         </ScrollView>
 
-        <Pressable
-          style={styles.addBtn}
-          onPress={() => { haptic(); setShowAddModal(true); }}
-        >
-          <Text style={styles.addBtnIcon}>+</Text>
-          <Text style={styles.addBtnText}>Add Material</Text>
-        </Pressable>
+        <View style={styles.addRow}>
+          <Pressable
+            style={styles.addBtn}
+            onPress={() => { haptic(); setShowAddModal(true); }}
+          >
+            <Text style={styles.addBtnIcon}>+</Text>
+            <Text style={styles.addBtnText}>Add Material</Text>
+          </Pressable>
+          <Pressable
+            style={styles.micBtn}
+            onPress={() => { haptic(Haptics.ImpactFeedbackStyle.Medium); navigation.navigate('Voice'); }}
+            accessibilityLabel="Add material by voice"
+          >
+            <Text style={styles.micIcon}>🎤</Text>
+          </Pressable>
+        </View>
         </>
       )}
 
@@ -382,16 +391,6 @@ export default function CalculatorScreen() {
         onDone={() => setActiveTab('materials')}
       />}
       {activeTab === 'convert' && <ConvertView />}
-
-      {/* Voice Button */}
-      <Pressable
-        style={styles.voiceBtn}
-        onPress={() => { haptic(Haptics.ImpactFeedbackStyle.Medium); navigation.navigate('Voice'); }}
-      >
-        <View style={styles.voiceIconWrap}>
-          <Text style={styles.voiceIcon}>🎤</Text>
-        </View>
-      </Pressable>
 
       {/* Bottom Tab Bar */}
       <View style={styles.bottomBar}>
@@ -860,9 +859,6 @@ const styles = StyleSheet.create({
   fractionCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.lg, marginTop: spacing.md },
   fractionLabel: { ...typography.label, color: colors.textDimmer, marginBottom: spacing.sm },
   fractionValue: { fontSize: 24, fontWeight: '600', color: colors.text, letterSpacing: -0.5 },
-  voiceBtn: { position: 'absolute', bottom: 130, right: spacing.xxl, width: 64, height: 64, borderRadius: 32, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8, zIndex: 10 },
-  voiceIconWrap: { width: 40, height: 40, alignItems: 'center', justifyContent: 'center' },
-  voiceIcon: { fontSize: 28, lineHeight: 32, textAlign: 'center', includeFontPadding: false, marginTop: -2 },
   bottomBar: { flexDirection: 'row', justifyContent: 'space-around', paddingTop: spacing.md, paddingBottom: spacing.xxl + 4, borderTopWidth: 1, borderTopColor: colors.border, backgroundColor: colors.bg },
   bottomItem: { alignItems: 'center', gap: 4, paddingHorizontal: spacing.md, paddingVertical: 4 },
   bottomIcon: { fontSize: 26 },
@@ -897,7 +893,10 @@ const styles = StyleSheet.create({
   costTotalValue: { fontSize: 28, fontWeight: '800', color: colors.accent, fontVariant: ['tabular-nums'] as any },
   doneBtn: { marginTop: spacing.lg, alignItems: 'center', padding: spacing.md, backgroundColor: colors.surface2, borderRadius: radius.md },
   doneBtnText: { color: colors.accent, fontWeight: '600', fontSize: 15 },
-  addBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 16, marginHorizontal: spacing.xl, marginBottom: 90, shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+  addRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginHorizontal: spacing.xl, marginBottom: 90 },
+  addBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.sm, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 16, shadowColor: colors.accent, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 8 },
+  micBtn: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderHover, alignItems: 'center', justifyContent: 'center' },
+  micIcon: { fontSize: 24, lineHeight: 28, textAlign: 'center', includeFontPadding: false },
   addBtnIcon: { fontSize: 22, fontWeight: '700', color: colors.bg, lineHeight: 24 },
   addBtnText: { fontSize: 17, fontWeight: '700', color: colors.bg, letterSpacing: -0.3 },
   searchBar: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.surface, marginHorizontal: spacing.md, marginBottom: spacing.sm, borderRadius: radius.md, paddingHorizontal: spacing.md, borderWidth: 1, borderColor: colors.border },
