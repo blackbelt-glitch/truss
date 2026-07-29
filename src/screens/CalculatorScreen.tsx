@@ -475,6 +475,7 @@ export default function CalculatorScreen() {
 
       {/* Rename Project Modal */}
       <Modal visible={showRenameModal} animationType="fade" transparent={true} onRequestClose={() => setShowRenameModal(false)}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
         <Pressable style={styles.modalOverlay} onPress={() => { Keyboard.dismiss(); setShowRenameModal(false); }}>
           <Pressable style={[styles.modalContent, { paddingBottom: spacing.xxl + insets.bottom }]} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
@@ -515,6 +516,7 @@ export default function CalculatorScreen() {
             </TouchableOpacity>
           </Pressable>
         </Pressable>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );
@@ -771,6 +773,7 @@ function AddMaterialModal({ onAdd, onClose, onVoice }: {
     : materials;
   const filteredCategories = [...new Set(filteredMaterials.map((m) => m.category))];
   return (
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
     <Pressable style={styles.modalOverlay} onPress={onClose}>
       <Pressable style={[styles.modalContentLarge, { paddingBottom: spacing.xxl + insets.bottom }]} onPress={(e) => e.stopPropagation()}>
         <View style={styles.modalHeader}>
@@ -840,6 +843,7 @@ function AddMaterialModal({ onAdd, onClose, onVoice }: {
         )}
       </Pressable>
     </Pressable>
+    </KeyboardAvoidingView>
   );
 }
 
