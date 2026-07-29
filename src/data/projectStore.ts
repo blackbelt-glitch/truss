@@ -16,6 +16,8 @@ interface SerializedCalc {
   materialId: string;
   quantity: number;
   wastePercent: number;
+  customName?: string;
+  customPrice?: number;
 }
 
 interface SerializedProject {
@@ -31,13 +33,17 @@ function serializeCalc(calc: MaterialCalculation): SerializedCalc {
     materialId: calc.material.id,
     quantity: calc.quantity,
     wastePercent: calc.wastePercent,
+    customName: calc.customName,
+    customPrice: calc.customPrice,
   };
 }
 
 function deserializeCalc(s: SerializedCalc): MaterialCalculation | null {
   const material = materialsById[s.materialId];
   if (!material) return null;
-  return calculateMaterial(material, s.quantity, s.wastePercent);
+  const calc = calculateMaterial(material, s.quantity, s.wastePercent, s.customPrice);
+  if (s.customName) calc.customName = s.customName;
+  return calc;
 }
 
 // Build lookup table

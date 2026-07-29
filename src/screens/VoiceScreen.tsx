@@ -17,6 +17,7 @@ import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import { colors, spacing, radius, typography } from '../theme';
 import { materials, calculateMaterial, formatCurrency, MaterialCalculation } from '../data/materials';
+import { loadDefaultPrices, calculateWithDefaultPrice } from '../data/priceStore';
 import { transcribeAudio } from '../services/whisper';
 
 interface ParsedItem {
@@ -37,6 +38,9 @@ export default function VoiceScreen() {
   const [manualInput, setManualInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
+
+  // Warm the saved-price cache so voice-added materials use the user's prices.
+  useEffect(() => { loadDefaultPrices(); }, []);
 
   const haptic = (style = Haptics.ImpactFeedbackStyle.Light) => Haptics.impactAsync(style);
 
@@ -150,7 +154,7 @@ export default function VoiceScreen() {
     for (const m of matches) {
       const mat = findMaterial(m.materialText);
       if (mat) {
-        const calc = calculateMaterial(mat, m.qty);
+        const calc = calculateWithDefaultPrice(mat, m.qty);
         items.push({
           icon: mat.icon,
           qty: `${calc.boxesNeeded} ${mat.coveragePerBox ? 'boxes' : 'pcs'}`,

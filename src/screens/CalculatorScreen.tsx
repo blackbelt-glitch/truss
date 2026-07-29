@@ -34,6 +34,14 @@ import {
   createProject,
   renameProject,
 } from '../data/projectStore';
+import {
+  DefaultPrices,
+  loadDefaultPrices,
+  setDefaultPrice,
+  clearDefaultPrice,
+  getDefaultPrice,
+  calculateWithDefaultPrice,
+} from '../data/priceStore';
 
 type Tab = 'area' | 'materials' | 'cost' | 'convert';
 
@@ -55,6 +63,12 @@ export default function CalculatorScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [defaultPrices, setDefaultPrices] = useState<DefaultPrices>({});
+
+  // Warm the saved-price cache before any material gets added.
+  useEffect(() => {
+    loadDefaultPrices().then(setDefaultPrices);
+  }, []);
 
   // Hiding the search bar must always drop the filter with it — otherwise the
   // list stays filtered with no visible control to undo it.
@@ -184,7 +198,7 @@ export default function CalculatorScreen() {
       return;
     }
     haptic(Haptics.ImpactFeedbackStyle.Medium);
-    setCalculations([...calculations, calculateMaterial(material, quantity)]);
+    setCalculations([...calculations, calculateWithDefaultPrice(material, quantity)]);
     setShowAddModal(false);
   };
 
@@ -291,7 +305,7 @@ export default function CalculatorScreen() {
                       style={styles.quickAddChip}
                       onPress={() => {
                         haptic(Haptics.ImpactFeedbackStyle.Medium);
-                        setCalculations([...calculations, calculateMaterial(m, 100)]);
+                        setCalculations([...calculations, calculateWithDefaultPrice(m, 100)]);
                       }}
                     >
                       <Text style={styles.quickAddChipIcon}>{m.icon}</Text>
@@ -425,7 +439,7 @@ export default function CalculatorScreen() {
           <Text style={styles.bottomIcon}>🪜</Text>
           <Text style={styles.bottomLabel}>Stairs</Text>
         </Pressable>
-        <Pressable style={styles.bottomItem} onPress={() => { haptic(); setActiveScreen('settings'); navigation.navigate('Paywall'); }}>
+        <Pressable style={styles.bottomItem} onPress={() => { haptic(); setActiveScreen('settings'); setShowSettings(true); }}>
           <Text style={[styles.bottomIcon, activeScreen === 'settings' && { color: colors.accent }]}>⚙️</Text>
           <Text style={[styles.bottomLabel, activeScreen === 'settings' && { color: colors.accent }]}>Settings</Text>
         </Pressable>
@@ -461,6 +475,13 @@ export default function CalculatorScreen() {
           onClose={() => setEditingIndex(null)}
           onSave={(qty, name, price) => { updateQuantity(editingIndex, qty, name, price); setEditingIndex(null); }}
           onDelete={() => { removeMaterial(editingIndex); setEditingIndex(null); }}
+          savedDefault={defaultPrices[calculations[editingIndex].material.id]}
+          onSaveDefault={async (price) => {
+            const updated = price != null
+              ? await setDefaultPrice(calculations[editingIndex!].material.id, price)
+              : await clearDefaultPrice(calculations[editingIndex!].material.id);
+            setDefaultPrices(updated);
+          }}
         />
       )}
 
@@ -680,11 +701,35 @@ function decimalToFractionSimple(decimal: number): string {
 }
 
 // Edit Material Modal — change quantity and custom name
-function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
+/**
+ * Keep a numeric text field to digits and at most one decimal point.
+ * Blocks minus signs, letters, and pasted junk at the source, so a negative
+ * or garbage price can never reach the estimate.
+ */
+function sanitizeNumeric(text: string): string {
+  const cleaned = text.replace(/[^0-9.]/g, '');
+  const parts = cleaned.split('.');
+  if (parts.length <= 2) return cleaned;
+  return `${parts[0]}.${parts.slice(1).join('')}`;
+}
+
+/** Parse a sanitized field into a usable non-negative number, or undefined. */
+function parsePositive(text: string): number | undefined {
+  if (text.trim() === '') return undefined;
+  const n = parseFloat(text);
+  if (!isFinite(n) || n < 0) return undefined;
+  return n;
+}
+
+function EditMaterialModal({ calc, onClose, onSave, onDelete, savedDefault, onSaveDefault }: {
   calc: MaterialCalculation;
   onClose: () => void;
   onSave: (qty: number, name?: string, price?: number) => void;
   onDelete: () => void;
+  /** The user's saved price for this material, if any. */
+  savedDefault?: number;
+  /** Save the given price as the default, or clear it when passed undefined. */
+  onSaveDefault: (price?: number) => void;
 }) {
   const insets = useSafeAreaInsets();
   const perBox = !!calc.material.coveragePerBox;
@@ -693,17 +738,23 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
   const [name, setName] = useState(calc.customName || calc.material.name);
   const [price, setPrice] = useState(calc.customPrice != null ? String(calc.customPrice) : '');
 
-  // Blank price input means "use the catalog price" — not "free".
-  const parsedPrice = price.trim() === '' ? undefined : parseFloat(price);
-  const priceToUse = parsedPrice != null && !isNaN(parsedPrice) ? parsedPrice : catalogPrice;
-  const units = (parseFloat(qty) || 0) * (1 + calc.wastePercent / 100);
+  // Blank price input falls back to the user's saved default, then the catalog
+  // price — it never means "free".
+  const parsedPrice = parsePositive(price);
+  const fallbackPrice = savedDefault ?? catalogPrice;
+  const fallbackLabel = savedDefault != null
+    ? `your default ${formatCurrency(savedDefault)}`
+    : `the catalog price ${formatCurrency(catalogPrice)}`;
+  const priceToUse = parsedPrice ?? fallbackPrice;
+  const parsedQty = parsePositive(qty) ?? 0;
+  const units = parsedQty * (1 + calc.wastePercent / 100);
   const previewCount = perBox
     ? Math.ceil(units / calc.material.coveragePerBox!)
-    : Math.ceil(parseFloat(qty) || 0);
+    : Math.ceil(parsedQty);
   const previewSubtotal = previewCount * priceToUse;
   const submit = () => {
     Keyboard.dismiss();
-    onSave(parseFloat(qty) || 0, name, parsedPrice != null && !isNaN(parsedPrice) ? parsedPrice : undefined);
+    onSave(parsedQty, name, parsedPrice);
   };
   return (
     <Modal visible={true} animationType="slide" transparent={true} onRequestClose={onClose}>
@@ -720,12 +771,12 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
           <Text style={styles.modalLabel}>Material Name</Text>
           <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="e.g. Red Oak Hardwood" placeholderTextColor={colors.textDimmer} returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
           <Text style={styles.modalLabel}>Quantity ({calc.material.unit})</Text>
-          <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
+          <TextInput style={styles.modalInput} value={qty} onChangeText={(t) => setQty(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
           <Text style={styles.modalLabel}>Your price {perBox ? '/ box' : `/ ${calc.material.unit}`}</Text>
           <TextInput
             style={styles.modalInput}
             value={price}
-            onChangeText={setPrice}
+            onChangeText={(t) => setPrice(sanitizeNumeric(t))}
             keyboardType="decimal-pad"
             selectTextOnFocus
             placeholder={`${formatCurrency(catalogPrice)}  (catalog price)`}
@@ -734,10 +785,30 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
             onSubmitEditing={submit}
           />
           <Text style={styles.modalHint}>
-            {parsedPrice != null && !isNaN(parsedPrice)
-              ? `Using your price. Clear this field to go back to ${formatCurrency(catalogPrice)}.`
-              : 'Leave blank to use the catalog price.'}
+            {parsedPrice != null
+              ? `Using your price. Clear this field to go back to ${fallbackLabel}.`
+              : `Leave blank to use ${fallbackLabel}.`}
           </Text>
+
+          {/* Promote this price to the user's default for every future project */}
+          {parsedPrice != null && parsedPrice !== savedDefault && (
+            <TouchableOpacity style={styles.defaultPriceBtn} onPress={() => onSaveDefault(parsedPrice)}>
+              <Text style={styles.defaultPriceBtnText}>
+                ☆  Save {formatCurrency(parsedPrice)} as my default for {calc.material.name}
+              </Text>
+            </TouchableOpacity>
+          )}
+          {savedDefault != null && (
+            <View style={styles.defaultPriceRow}>
+              <Text style={styles.defaultPriceNote}>
+                ★  Your default: {formatCurrency(savedDefault)}
+              </Text>
+              <TouchableOpacity onPress={() => onSaveDefault(undefined)}>
+                <Text style={styles.defaultPriceClear}>Clear</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
           <View style={styles.modalPreview}>
             <Text style={styles.modalPreviewLabel}>{perBox ? 'Boxes' : 'Pieces'} needed: {previewCount}</Text>
             <Text style={styles.modalPreviewLabel}>Subtotal: {formatCurrency(previewSubtotal)}</Text>
@@ -814,7 +885,11 @@ function AddMaterialModal({ onAdd, onClose, onVoice }: {
                   <TouchableOpacity key={m.id} style={styles.materialOption} onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); setSelected(m); }}>
                     <Text style={styles.materialOptionIcon}>{m.icon}</Text>
                     <Text style={styles.materialOptionName}>{m.name}</Text>
-                    <Text style={styles.materialOptionPrice}>{m.coveragePerBox ? `$${m.pricePerBox}/box` : `$${m.pricePerUnit}/${m.unit}`}</Text>
+                    <Text style={[styles.materialOptionPrice, getDefaultPrice(m.id) != null && { color: colors.accent, fontWeight: '600' }]}>
+                      {getDefaultPrice(m.id) != null ? '★ ' : ''}
+                      ${getDefaultPrice(m.id) ?? (m.coveragePerBox ? m.pricePerBox : m.pricePerUnit)}
+                      {m.coveragePerBox ? '/box' : `/${m.unit}`}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
@@ -834,10 +909,10 @@ function AddMaterialModal({ onAdd, onClose, onVoice }: {
               <Text style={styles.materialName}>{selected.name}</Text>
             </View>
             <Text style={styles.modalLabel}>Quantity ({selected.unit})</Text>
-            <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus autoFocus placeholder="Enter quantity" placeholderTextColor={colors.textDimmer} returnKeyType="done" onSubmitEditing={() => onAdd(selected, parseFloat(qty) || 0)} />
+            <TextInput style={styles.modalInput} value={qty} onChangeText={(t) => setQty(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus autoFocus placeholder="Enter quantity" placeholderTextColor={colors.textDimmer} returnKeyType="done" onSubmitEditing={() => onAdd(selected, parsePositive(qty) ?? 0)} />
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setSelected(null)}><Text style={styles.modalCancelText}>Back</Text></TouchableOpacity>
-              <TouchableOpacity style={[styles.modalSaveBtn, { flex: 1 }]} onPress={() => onAdd(selected, parseFloat(qty) || 0)}><Text style={styles.modalSaveText}>Add</Text></TouchableOpacity>
+              <TouchableOpacity style={[styles.modalSaveBtn, { flex: 1 }]} onPress={() => onAdd(selected, parsePositive(qty) ?? 0)}><Text style={styles.modalSaveText}>Add</Text></TouchableOpacity>
             </View>
           </View>
         )}
@@ -927,6 +1002,11 @@ const styles = StyleSheet.create({
   modalCloseBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2A2A2A', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
   modalLabel: { fontSize: 13, fontWeight: '500', color: colors.textDim, marginBottom: spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 },
   modalHint: { fontSize: 12, color: colors.textDimmer, marginTop: -spacing.sm, marginBottom: spacing.md },
+  defaultPriceBtn: { borderWidth: 1, borderColor: colors.accent, borderRadius: radius.md, paddingVertical: 10, paddingHorizontal: spacing.md, marginBottom: spacing.md },
+  defaultPriceBtnText: { color: colors.accent, fontSize: 13, fontWeight: '600' },
+  defaultPriceRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
+  defaultPriceNote: { color: colors.accent, fontSize: 13, fontWeight: '600' },
+  defaultPriceClear: { color: colors.textDim, fontSize: 13, fontWeight: '600', padding: 4 },
   modalInput: { fontSize: 24, fontWeight: '600', color: colors.text, backgroundColor: colors.surface2, borderRadius: radius.md, padding: 16, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.lg, fontVariant: ['tabular-nums'] as any },
   modalPreview: { backgroundColor: colors.bg, borderRadius: radius.md, padding: spacing.lg, marginBottom: spacing.lg },
   modalPreviewLabel: { fontSize: 14, color: colors.textDim, marginVertical: 4, fontVariant: ['tabular-nums'] as any },
