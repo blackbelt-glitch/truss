@@ -15,7 +15,7 @@ import {
   Share,
   Alert,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
 import { colors, spacing, radius, typography } from '../theme';
@@ -40,6 +40,7 @@ type Tab = 'area' | 'materials' | 'cost' | 'convert';
 export default function CalculatorScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<any>();
+  const insets = useSafeAreaInsets();
   const [project, setProject] = useState<Project | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>('materials');
   const [calculations, setCalculations] = useState<MaterialCalculation[]>([
@@ -433,7 +434,7 @@ export default function CalculatorScreen() {
       {/* Settings Modal */}
       <Modal visible={showSettings} animationType="slide" transparent onRequestClose={() => { setShowSettings(false); setActiveScreen('calc'); }}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
+          <View style={[styles.modalContent, { paddingBottom: spacing.xxl + insets.bottom }]}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>⚙️  Settings</Text>
               <TouchableOpacity onPress={() => { setShowSettings(false); setActiveScreen('calc'); }}>
@@ -475,7 +476,7 @@ export default function CalculatorScreen() {
       {/* Rename Project Modal */}
       <Modal visible={showRenameModal} animationType="fade" transparent={true} onRequestClose={() => setShowRenameModal(false)}>
         <Pressable style={styles.modalOverlay} onPress={() => { Keyboard.dismiss(); setShowRenameModal(false); }}>
-          <Pressable style={styles.modalContent} onPress={(e) => e.stopPropagation()}>
+          <Pressable style={[styles.modalContent, { paddingBottom: spacing.xxl + insets.bottom }]} onPress={(e) => e.stopPropagation()}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>✏️  Rename Project</Text>
               <TouchableOpacity onPress={() => setShowRenameModal(false)} style={styles.modalCloseBtn}>
@@ -683,6 +684,7 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
   onSave: (qty: number, name?: string, price?: number) => void;
   onDelete: () => void;
 }) {
+  const insets = useSafeAreaInsets();
   const perBox = !!calc.material.coveragePerBox;
   const catalogPrice = (perBox ? calc.material.pricePerBox : calc.material.pricePerUnit) || 0;
   const [qty, setQty] = useState(String(calc.quantity));
@@ -706,7 +708,7 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
           <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={styles.modalContent}>
+            <View style={[styles.modalContent, { paddingBottom: spacing.xxl + insets.bottom }]}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{calc.material.icon} Edit Material</Text>
             <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
@@ -756,6 +758,7 @@ function AddMaterialModal({ onAdd, onClose, onVoice }: {
   onClose: () => void;
   onVoice: () => void;
 }) {
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState<Material | null>(null);
   const [qty, setQty] = useState('');
   const [filter, setFilter] = useState('');
@@ -769,7 +772,7 @@ function AddMaterialModal({ onAdd, onClose, onVoice }: {
   const filteredCategories = [...new Set(filteredMaterials.map((m) => m.category))];
   return (
     <Pressable style={styles.modalOverlay} onPress={onClose}>
-      <Pressable style={styles.modalContentLarge} onPress={(e) => e.stopPropagation()}>
+      <Pressable style={[styles.modalContentLarge, { paddingBottom: spacing.xxl + insets.bottom }]} onPress={(e) => e.stopPropagation()}>
         <View style={styles.modalHeader}>
           <Text style={styles.modalTitle}>Add Material</Text>
           <View style={{ flexDirection: 'row', gap: spacing.sm }}>
@@ -912,7 +915,7 @@ const styles = StyleSheet.create({
   bottomIcon: { fontSize: 26 },
   bottomLabel: { fontSize: 12, fontWeight: '500', color: colors.textDimmer },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xxl, maxHeight: '60%' },
+  modalContent: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xxl, maxHeight: '90%' },
   modalContentLarge: { backgroundColor: colors.surface, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: spacing.xxl, maxHeight: '80%', flex: 1 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.xl },
   modalTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
