@@ -744,7 +744,7 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
           </View>
           <View style={styles.modalActions}>
             <TouchableOpacity style={styles.modalDeleteBtn} onPress={onDelete}><Text style={styles.modalDeleteText}>Delete</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalSaveBtn} onPress={submit}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
+            <TouchableOpacity style={[styles.modalSaveBtn, { flex: 1 }]} onPress={submit}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
           </View>
         </View>
           </TouchableWithoutFeedback>
@@ -837,7 +837,7 @@ function AddMaterialModal({ onAdd, onClose, onVoice }: {
             <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus autoFocus placeholder="Enter quantity" placeholderTextColor={colors.textDimmer} returnKeyType="done" onSubmitEditing={() => onAdd(selected, parseFloat(qty) || 0)} />
             <View style={styles.modalActions}>
               <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setSelected(null)}><Text style={styles.modalCancelText}>Back</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.modalSaveBtn} onPress={() => onAdd(selected, parseFloat(qty) || 0)}><Text style={styles.modalSaveText}>Add</Text></TouchableOpacity>
+              <TouchableOpacity style={[styles.modalSaveBtn, { flex: 1 }]} onPress={() => onAdd(selected, parseFloat(qty) || 0)}><Text style={styles.modalSaveText}>Add</Text></TouchableOpacity>
             </View>
           </View>
         )}
@@ -930,8 +930,11 @@ const styles = StyleSheet.create({
   modalInput: { fontSize: 24, fontWeight: '600', color: colors.text, backgroundColor: colors.surface2, borderRadius: radius.md, padding: 16, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.lg, fontVariant: ['tabular-nums'] as any },
   modalPreview: { backgroundColor: colors.bg, borderRadius: radius.md, padding: spacing.lg, marginBottom: spacing.lg },
   modalPreviewLabel: { fontSize: 14, color: colors.textDim, marginVertical: 4, fontVariant: ['tabular-nums'] as any },
-  modalActions: { flexDirection: 'row', gap: spacing.sm },
-  modalSaveBtn: { flex: 1, backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 16, alignItems: 'center' },
+  // Children stretch to share the row evenly. `flex` lives here, not on the
+  // buttons — with flex on the button, using one as a direct child of a column
+  // sheet collapses its height (flexBasis: 0) and hides its label.
+  modalActions: { flexDirection: 'row', gap: spacing.sm, alignItems: 'stretch' },
+  modalSaveBtn: { backgroundColor: colors.accent, borderRadius: radius.pill, paddingVertical: 16, alignItems: 'center', justifyContent: 'center' },
   modalSaveText: { fontSize: 15, fontWeight: '600', color: colors.bg },
   modalCancelBtn: { flex: 1, backgroundColor: colors.surface2, borderRadius: radius.pill, paddingVertical: 16, alignItems: 'center', borderWidth: 1, borderColor: colors.border },
   modalCancelText: { fontSize: 15, fontWeight: '600', color: colors.text },
