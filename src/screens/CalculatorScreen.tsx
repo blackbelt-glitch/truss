@@ -23,6 +23,7 @@ import {
   materials,
   calculateMaterial,
   formatCurrency,
+  effectivePrice,
   MaterialCalculation,
   Material,
 } from '../data/materials';
@@ -156,9 +157,9 @@ export default function CalculatorScreen() {
     { id: 'convert', label: 'Convert' },
   ];
 
-  const updateQuantity = (index: number, quantity: number, customName?: string) => {
+  const updateQuantity = (index: number, quantity: number, customName?: string, customPrice?: number) => {
     const calc = calculations[index];
-    const newCalc = calculateMaterial(calc.material, quantity, calc.wastePercent);
+    const newCalc = calculateMaterial(calc.material, quantity, calc.wastePercent, customPrice);
     if (customName && customName.trim() !== calc.material.name) {
       newCalc.customName = customName.trim();
     } else {
@@ -355,9 +356,10 @@ export default function CalculatorScreen() {
               <View style={styles.materialRow}>
                 <Text style={styles.materialLabel}>
                   {calc.material.coveragePerBox ? 'Price / box' : 'Price / unit'}
+                  {calc.customPrice != null && <Text style={styles.materialLabelTag}>  · yours</Text>}
                 </Text>
-                <Text style={styles.materialValue}>
-                  {formatCurrency(calc.material.coveragePerBox ? calc.material.pricePerBox || 0 : calc.material.pricePerUnit || 0)}
+                <Text style={[styles.materialValue, calc.customPrice != null && { color: colors.accent }]}>
+                  {formatCurrency(effectivePrice(calc))}
                 </Text>
               </View>
               <View style={styles.materialTotal}>
@@ -456,7 +458,7 @@ export default function CalculatorScreen() {
         <EditMaterialModal
           calc={calculations[editingIndex]}
           onClose={() => setEditingIndex(null)}
-          onSave={(qty, name) => { updateQuantity(editingIndex, qty, name); setEditingIndex(null); }}
+          onSave={(qty, name, price) => { updateQuantity(editingIndex, qty, name, price); setEditingIndex(null); }}
           onDelete={() => { removeMaterial(editingIndex); setEditingIndex(null); }}
         />
       )}
@@ -678,11 +680,27 @@ function decimalToFractionSimple(decimal: number): string {
 function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
   calc: MaterialCalculation;
   onClose: () => void;
-  onSave: (qty: number, name?: string) => void;
+  onSave: (qty: number, name?: string, price?: number) => void;
   onDelete: () => void;
 }) {
+  const perBox = !!calc.material.coveragePerBox;
+  const catalogPrice = (perBox ? calc.material.pricePerBox : calc.material.pricePerUnit) || 0;
   const [qty, setQty] = useState(String(calc.quantity));
   const [name, setName] = useState(calc.customName || calc.material.name);
+  const [price, setPrice] = useState(calc.customPrice != null ? String(calc.customPrice) : '');
+
+  // Blank price input means "use the catalog price" — not "free".
+  const parsedPrice = price.trim() === '' ? undefined : parseFloat(price);
+  const priceToUse = parsedPrice != null && !isNaN(parsedPrice) ? parsedPrice : catalogPrice;
+  const units = (parseFloat(qty) || 0) * (1 + calc.wastePercent / 100);
+  const previewCount = perBox
+    ? Math.ceil(units / calc.material.coveragePerBox!)
+    : Math.ceil(parseFloat(qty) || 0);
+  const previewSubtotal = previewCount * priceToUse;
+  const submit = () => {
+    Keyboard.dismiss();
+    onSave(parseFloat(qty) || 0, name, parsedPrice != null && !isNaN(parsedPrice) ? parsedPrice : undefined);
+  };
   return (
     <Modal visible={true} animationType="slide" transparent={true} onRequestClose={onClose}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -698,14 +716,31 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete }: {
           <Text style={styles.modalLabel}>Material Name</Text>
           <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="e.g. Red Oak Hardwood" placeholderTextColor={colors.textDimmer} returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
           <Text style={styles.modalLabel}>Quantity ({calc.material.unit})</Text>
-          <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={() => { Keyboard.dismiss(); onSave(parseFloat(qty) || 0, name); }} />
+          <TextInput style={styles.modalInput} value={qty} onChangeText={setQty} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
+          <Text style={styles.modalLabel}>Your price {perBox ? '/ box' : `/ ${calc.material.unit}`}</Text>
+          <TextInput
+            style={styles.modalInput}
+            value={price}
+            onChangeText={setPrice}
+            keyboardType="decimal-pad"
+            selectTextOnFocus
+            placeholder={`${formatCurrency(catalogPrice)}  (catalog price)`}
+            placeholderTextColor={colors.textDimmer}
+            returnKeyType="done"
+            onSubmitEditing={submit}
+          />
+          <Text style={styles.modalHint}>
+            {parsedPrice != null && !isNaN(parsedPrice)
+              ? `Using your price. Clear this field to go back to ${formatCurrency(catalogPrice)}.`
+              : 'Leave blank to use the catalog price.'}
+          </Text>
           <View style={styles.modalPreview}>
-            <Text style={styles.modalPreviewLabel}>Boxes needed: {calc.material.coveragePerBox ? Math.ceil((parseFloat(qty) || 0) * (1 + calc.wastePercent / 100) / calc.material.coveragePerBox) : Math.ceil(parseFloat(qty) || 0)}</Text>
-            <Text style={styles.modalPreviewLabel}>Subtotal: {formatCurrency(calc.material.coveragePerBox ? (Math.ceil((parseFloat(qty) || 0) * (1 + calc.wastePercent / 100) / calc.material.coveragePerBox)) * (calc.material.pricePerBox || 0) : (Math.ceil(parseFloat(qty) || 0)) * (calc.material.pricePerUnit || 0))}</Text>
+            <Text style={styles.modalPreviewLabel}>{perBox ? 'Boxes' : 'Pieces'} needed: {previewCount}</Text>
+            <Text style={styles.modalPreviewLabel}>Subtotal: {formatCurrency(previewSubtotal)}</Text>
           </View>
           <View style={styles.modalActions}>
             <TouchableOpacity style={styles.modalDeleteBtn} onPress={onDelete}><Text style={styles.modalDeleteText}>Delete</Text></TouchableOpacity>
-            <TouchableOpacity style={styles.modalSaveBtn} onPress={() => { Keyboard.dismiss(); onSave(parseFloat(qty) || 0, name); }}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
+            <TouchableOpacity style={styles.modalSaveBtn} onPress={submit}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
           </View>
         </View>
           </TouchableWithoutFeedback>
@@ -850,6 +885,7 @@ const styles = StyleSheet.create({
   materialBadgeText: { fontSize: 11, fontWeight: '600', color: colors.accent },
   materialRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 6 },
   materialLabel: { fontSize: 14, color: colors.textDim },
+  materialLabelTag: { fontSize: 12, color: colors.accent, fontWeight: '600' },
   materialValue: { fontSize: 14, fontWeight: '500', color: colors.text, fontVariant: ['tabular-nums'] as any },
   materialTotal: { marginTop: spacing.sm, paddingTop: spacing.md, borderTopWidth: 1, borderTopColor: colors.border, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   materialTotalLabel: { fontSize: 13, color: colors.textDim },
@@ -883,6 +919,7 @@ const styles = StyleSheet.create({
   modalCloseText: { fontSize: 22, color: colors.text, fontWeight: '600' },
   modalCloseBtn: { width: 36, height: 36, borderRadius: 18, backgroundColor: '#2A2A2A', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border },
   modalLabel: { fontSize: 13, fontWeight: '500', color: colors.textDim, marginBottom: spacing.sm, textTransform: 'uppercase', letterSpacing: 0.5 },
+  modalHint: { fontSize: 12, color: colors.textDimmer, marginTop: -spacing.sm, marginBottom: spacing.md },
   modalInput: { fontSize: 24, fontWeight: '600', color: colors.text, backgroundColor: colors.surface2, borderRadius: radius.md, padding: 16, borderWidth: 1, borderColor: colors.border, marginBottom: spacing.lg, fontVariant: ['tabular-nums'] as any },
   modalPreview: { backgroundColor: colors.bg, borderRadius: radius.md, padding: spacing.lg, marginBottom: spacing.lg },
   modalPreviewLabel: { fontSize: 14, color: colors.textDim, marginVertical: 4, fontVariant: ['tabular-nums'] as any },

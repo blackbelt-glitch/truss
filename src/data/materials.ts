@@ -200,6 +200,13 @@ export interface MaterialCalculation {
   totalUnits: number;
   subtotal: number;
   customName?: string;
+  /** Supplier price entered by the user, overriding the catalog price for this line item. */
+  customPrice?: number;
+}
+
+/** The price actually used for a line item — the user's own price if they set one. */
+export function effectivePrice(calc: MaterialCalculation): number {
+  return calc.customPrice ?? calc.material.pricePerBox ?? calc.material.pricePerUnit ?? 0;
 }
 
 export function calculateMaterial(
@@ -221,6 +228,7 @@ export function calculateMaterial(
       boxesNeeded,
       totalUnits,
       subtotal,
+      customPrice,
     };
   }
   
@@ -235,6 +243,7 @@ export function calculateMaterial(
     boxesNeeded: piecesNeeded,
     totalUnits,
     subtotal,
+    customPrice,
   };
 }
 
