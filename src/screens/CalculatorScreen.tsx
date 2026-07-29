@@ -53,6 +53,14 @@ export default function CalculatorScreen() {
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Hiding the search bar must always drop the filter with it — otherwise the
+  // list stays filtered with no visible control to undo it.
+  const closeSearch = useCallback(() => {
+    setShowSearch(false);
+    setSearchQuery('');
+    Keyboard.dismiss();
+  }, []);
   const [defaultLaborRate, setDefaultLaborRate] = useState('45');
   const [defaultTax, setDefaultTax] = useState('8');
   // Cost state lifted up so header total reflects it
@@ -198,8 +206,12 @@ export default function CalculatorScreen() {
             style={styles.navBtn}
             onPress={() => {
               haptic();
-              if (activeTab !== 'materials') setActiveTab('materials');
-              setShowSearch((v) => !v);
+              if (showSearch) {
+                closeSearch();
+              } else {
+                if (activeTab !== 'materials') setActiveTab('materials');
+                setShowSearch(true);
+              }
             }}
           >
             <Text style={styles.navBtnText}>⌕</Text>
@@ -222,7 +234,7 @@ export default function CalculatorScreen() {
             returnKeyType="search"
             onSubmitEditing={Keyboard.dismiss}
           />
-          <TouchableOpacity onPress={() => { setShowSearch(false); setSearchQuery(''); Keyboard.dismiss(); }} style={{ padding: 8 }}>
+          <TouchableOpacity onPress={closeSearch} style={{ padding: 8 }}>
             <Text style={styles.searchClose}>✕</Text>
           </TouchableOpacity>
         </View>
@@ -249,7 +261,7 @@ export default function CalculatorScreen() {
           <Pressable
                         key={tab.id}
                         style={[styles.modeTab, activeTab === tab.id && styles.modeTabActive]}
-                        onPress={() => { haptic(); setActiveTab(tab.id); setShowSearch(false); }}
+                        onPress={() => { haptic(); setActiveTab(tab.id); closeSearch(); }}
                       >
                         <Text style={[styles.modeTabText, activeTab === tab.id && styles.modeTabTextActive]}>
                           {tab.label}
