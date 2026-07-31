@@ -659,6 +659,7 @@ function ConvertView() {
     cm: { ft: 0.0328084, m: 0.01, in: 0.393701 },
   };
   const value = parseFloat(input) || 0;
+  const fraction = decimalToFractionSimple(value);
   const otherUnits = (['ft', 'm', 'in', 'cm'] as const).filter((u) => u !== unit);
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -680,16 +681,23 @@ function ConvertView() {
             <Text style={styles.costValue}>{(value * conversions[unit][targetUnit]).toFixed(3)} {targetUnit}</Text>
           </View>
         ))}
-        <View style={styles.fractionCard}>
-          <Text style={styles.fractionLabel}>As Fraction</Text>
-          <Text style={styles.fractionValue}>{decimalToFractionSimple(value)} {unit}</Text>
-        </View>
+        {fraction != null && (
+          <View style={styles.fractionCard}>
+            <Text style={styles.fractionLabel}>As Fraction</Text>
+            <Text style={styles.fractionValue}>{fraction} {unit}</Text>
+          </View>
+        )}
       </ScrollView>
     </TouchableWithoutFeedback>
   );
 }
 
-function decimalToFractionSimple(decimal: number): string {
+/**
+ * Renders a decimal as a construction fraction (nearest 1/16"), or null when
+ * it doesn't land on one — a repeated decimal next to the value above it
+ * isn't a fraction, it's just noise.
+ */
+function decimalToFractionSimple(decimal: number): string | null {
   if (decimal === 0) return '0';
   const whole = Math.floor(decimal);
   const remainder = decimal - whole;
@@ -702,7 +710,7 @@ function decimalToFractionSimple(decimal: number): string {
   };
   const frac = common[remainder.toFixed(4)];
   if (frac) return whole > 0 ? `${whole} ${frac}` : frac;
-  return decimal.toFixed(3);
+  return null;
 }
 
 // Edit Material Modal — change quantity and custom name
