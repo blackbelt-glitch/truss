@@ -59,7 +59,7 @@ export default function CalculatorScreen() {
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [renameText, setRenameText] = useState('');
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [activeScreen, setActiveScreen] = useState<'calc' | 'projects' | 'export' | 'settings'>('calc');
+  const [activeScreen, setActiveScreen] = useState<'calc' | 'projects' | 'export' | 'settings' | 'stairs'>('calc');
   const [showSettings, setShowSettings] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -89,6 +89,11 @@ export default function CalculatorScreen() {
   useFocusEffect(
     useCallback(() => {
       const params = route.params as any || {};
+
+      // Regaining focus means we've returned from wherever a tab press sent
+      // us (Projects, Stairs, Voice) — without this, that tab's highlight
+      // would stay stuck on after leaving it.
+      setActiveScreen('calc');
 
       // Handle voice calculations coming from VoiceScreen
       if (params.voiceCalculations && params.voiceCalculations.length > 0) {
@@ -172,9 +177,9 @@ export default function CalculatorScreen() {
     { id: 'convert', label: 'Convert' },
   ];
 
-  const updateQuantity = (index: number, quantity: number, customName?: string, customPrice?: number) => {
+  const updateQuantity = (index: number, quantity: number, customName?: string, customPrice?: number, wastePercent?: number) => {
     const calc = calculations[index];
-    const newCalc = calculateMaterial(calc.material, quantity, calc.wastePercent, customPrice);
+    const newCalc = calculateMaterial(calc.material, quantity, wastePercent ?? calc.wastePercent, customPrice);
     if (customName && customName.trim() !== calc.material.name) {
       newCalc.customName = customName.trim();
     } else {
@@ -427,6 +432,10 @@ export default function CalculatorScreen() {
           <Text style={[styles.bottomIcon, activeScreen === 'calc' && { color: colors.accent }]}>📐</Text>
           <Text style={[styles.bottomLabel, activeScreen === 'calc' && { color: colors.accent }]}>Calculate</Text>
         </Pressable>
+        <Pressable style={styles.bottomItem} onPress={() => { haptic(Haptics.ImpactFeedbackStyle.Medium); setActiveScreen('stairs'); navigation.navigate('Stair'); }}>
+          <Text style={[styles.bottomIcon, activeScreen === 'stairs' && { color: colors.accent }]}>🪜</Text>
+          <Text style={[styles.bottomLabel, activeScreen === 'stairs' && { color: colors.accent }]}>Stairs</Text>
+        </Pressable>
         <Pressable style={styles.bottomItem} onPress={() => { haptic(); setActiveScreen('projects'); navigation.navigate('Projects'); }}>
           <Text style={[styles.bottomIcon, activeScreen === 'projects' && { color: colors.accent }]}>📋</Text>
           <Text style={[styles.bottomLabel, activeScreen === 'projects' && { color: colors.accent }]}>Projects</Text>
@@ -434,10 +443,6 @@ export default function CalculatorScreen() {
         <Pressable style={styles.bottomItem} onPress={handleExport}>
           <Text style={styles.bottomIcon}>📤</Text>
           <Text style={styles.bottomLabel}>Export</Text>
-        </Pressable>
-        <Pressable style={styles.bottomItem} onPress={() => { haptic(Haptics.ImpactFeedbackStyle.Medium); navigation.navigate('Stair'); }}>
-          <Text style={styles.bottomIcon}>🪜</Text>
-          <Text style={styles.bottomLabel}>Stairs</Text>
         </Pressable>
         <Pressable style={styles.bottomItem} onPress={() => { haptic(); setActiveScreen('settings'); setShowSettings(true); }}>
           <Text style={[styles.bottomIcon, activeScreen === 'settings' && { color: colors.accent }]}>⚙️</Text>
@@ -456,11 +461,11 @@ export default function CalculatorScreen() {
               </TouchableOpacity>
             </View>
             <Text style={styles.modalLabel}>Default Labor Rate ($/hr)</Text>
-            <TextInput style={styles.modalInput} value={defaultLaborRate} onChangeText={setDefaultLaborRate} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
+            <TextInput style={styles.modalInput} value={defaultLaborRate} onChangeText={(t) => setDefaultLaborRate(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
             <Text style={styles.modalLabel}>Default Tax Rate (%)</Text>
-            <TextInput style={styles.modalInput} value={defaultTax} onChangeText={setDefaultTax} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
+            <TextInput style={styles.modalInput} value={defaultTax} onChangeText={(t) => setDefaultTax(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
             <Text style={[styles.modalLabel, { marginTop: spacing.lg, color: colors.textDim }]}>Waste Factor</Text>
-            <Text style={{ color: colors.textDimmer, fontSize: 13, marginBottom: spacing.md }}>Per-material waste is set automatically. Default: 10%</Text>
+            <Text style={{ color: colors.textDimmer, fontSize: 13, marginBottom: spacing.md }}>Each material has its own catalog default. Override it per line item from Edit Material.</Text>
             <TouchableOpacity style={styles.modalSaveBtn} onPress={() => { Keyboard.dismiss(); setShowSettings(false); setActiveScreen('calc'); }}>
               <Text style={styles.modalSaveText}>Save Settings</Text>
             </TouchableOpacity>
@@ -473,7 +478,7 @@ export default function CalculatorScreen() {
         <EditMaterialModal
           calc={calculations[editingIndex]}
           onClose={() => setEditingIndex(null)}
-          onSave={(qty, name, price) => { updateQuantity(editingIndex, qty, name, price); setEditingIndex(null); }}
+          onSave={(qty, name, price, waste) => { updateQuantity(editingIndex, qty, name, price, waste); setEditingIndex(null); }}
           onDelete={() => { removeMaterial(editingIndex); setEditingIndex(null); }}
           savedDefault={defaultPrices[calculations[editingIndex].material.id]}
           onSaveDefault={async (price) => {
@@ -609,11 +614,11 @@ function CostView({ totalEstimate, laborRate, setLaborRate, hours, setHours, mar
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.costLabel}>Labor rate ($/hr)</Text>
-          <TextInput style={styles.costInput} value={laborRate} onChangeText={setLaborRate} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={Keyboard.dismiss} />
+          <TextInput style={styles.costInput} value={laborRate} onChangeText={(t) => setLaborRate(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={Keyboard.dismiss} />
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.costLabel}>Hours</Text>
-          <TextInput style={styles.costInput} value={hours} onChangeText={setHours} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={Keyboard.dismiss} />
+          <TextInput style={styles.costInput} value={hours} onChangeText={(t) => setHours(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={Keyboard.dismiss} />
         </View>
         <View style={styles.costRow}>
           <Text style={styles.costLabel}>Labor cost</Text>
@@ -621,7 +626,7 @@ function CostView({ totalEstimate, laborRate, setLaborRate, hours, setHours, mar
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.costLabel}>Markup %</Text>
-          <TextInput style={styles.costInput} value={markup} onChangeText={setMarkup} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={Keyboard.dismiss} />
+          <TextInput style={styles.costInput} value={markup} onChangeText={(t) => setMarkup(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={Keyboard.dismiss} />
         </View>
         <View style={styles.costRow}>
           <Text style={styles.costLabel}>Markup</Text>
@@ -629,7 +634,7 @@ function CostView({ totalEstimate, laborRate, setLaborRate, hours, setHours, mar
         </View>
         <View style={styles.inputRow}>
           <Text style={styles.costLabel}>Tax %</Text>
-          <TextInput style={styles.costInput} value={tax} onChangeText={setTax} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
+          <TextInput style={styles.costInput} value={tax} onChangeText={(t) => setTax(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} />
         </View>
         <View style={styles.costRow}>
           <Text style={styles.costLabel}>Tax</Text>
@@ -660,7 +665,7 @@ function ConvertView() {
       <ScrollView style={styles.inputArea} contentContainerStyle={{ paddingVertical: 20 }} keyboardShouldPersistTaps="handled">
         <View style={styles.bigCard}>
           <Text style={styles.bigCardLabel}>Unit Converter</Text>
-          <TextInput style={styles.converterInput} value={input} onChangeText={setInput} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} placeholder="0" placeholderTextColor={colors.textDimmer} />
+          <TextInput style={styles.converterInput} value={input} onChangeText={(t) => setInput(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="done" onSubmitEditing={Keyboard.dismiss} placeholder="0" placeholderTextColor={colors.textDimmer} />
         </View>
         <View style={styles.unitTabs}>
           {(['ft', 'm', 'in', 'cm'] as const).map((u) => (
@@ -724,7 +729,7 @@ function parsePositive(text: string): number | undefined {
 function EditMaterialModal({ calc, onClose, onSave, onDelete, savedDefault, onSaveDefault }: {
   calc: MaterialCalculation;
   onClose: () => void;
-  onSave: (qty: number, name?: string, price?: number) => void;
+  onSave: (qty: number, name?: string, price?: number, wastePercent?: number) => void;
   onDelete: () => void;
   /** The user's saved price for this material, if any. */
   savedDefault?: number;
@@ -737,6 +742,10 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete, savedDefault, onSa
   const [qty, setQty] = useState(String(calc.quantity));
   const [name, setName] = useState(calc.customName || calc.material.name);
   const [price, setPrice] = useState(calc.customPrice != null ? String(calc.customPrice) : '');
+  // Blank means "use the material's catalog default" — matches the price field's pattern.
+  const [waste, setWaste] = useState(
+    calc.wastePercent !== calc.material.defaultWaste ? String(calc.wastePercent) : ''
+  );
 
   // Blank price input falls back to the user's saved default, then the catalog
   // price — it never means "free".
@@ -747,31 +756,55 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete, savedDefault, onSa
     : `the catalog price ${formatCurrency(catalogPrice)}`;
   const priceToUse = parsedPrice ?? fallbackPrice;
   const parsedQty = parsePositive(qty) ?? 0;
-  const units = parsedQty * (1 + calc.wastePercent / 100);
+  // Blank waste falls back to this material's catalog default, same pattern as price.
+  const parsedWaste = parsePositive(waste);
+  const wasteToUse = parsedWaste ?? calc.material.defaultWaste;
+  const units = parsedQty * (1 + wasteToUse / 100);
   const previewCount = perBox
     ? Math.ceil(units / calc.material.coveragePerBox!)
     : Math.ceil(parsedQty);
   const previewSubtotal = previewCount * priceToUse;
   const submit = () => {
     Keyboard.dismiss();
-    onSave(parsedQty, name, parsedPrice);
+    onSave(parsedQty, name, parsedPrice, wasteToUse);
   };
   return (
     <Modal visible={true} animationType="slide" transparent={true} onRequestClose={onClose}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
-          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-            <View style={[styles.modalContent, { paddingBottom: spacing.xxl + insets.bottom }]}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>{calc.material.icon} Edit Material</Text>
             <TouchableOpacity onPress={onClose} style={styles.modalCloseBtn}>
               <Text style={styles.modalCloseText}>✕</Text>
             </TouchableOpacity>
           </View>
+          {/* Body scrolls independently of the pinned header/actions, so this
+              modal can never clip its Save button regardless of how much
+              content — or how short the device screen — it has to fit.
+              flexShrink (not flex) because the sheet is sized by its content:
+              flex would imply flexBasis 0 and collapse this to nothing. */}
+          <ScrollView
+            style={{ flexShrink: 1 }}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+          >
           <Text style={styles.modalLabel}>Material Name</Text>
           <TextInput style={styles.modalInput} value={name} onChangeText={setName} placeholder="e.g. Red Oak Hardwood" placeholderTextColor={colors.textDimmer} returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
           <Text style={styles.modalLabel}>Quantity ({calc.material.unit})</Text>
           <TextInput style={styles.modalInput} value={qty} onChangeText={(t) => setQty(sanitizeNumeric(t))} keyboardType="numeric" selectTextOnFocus returnKeyType="next" onSubmitEditing={() => Keyboard.dismiss()} />
+          <Text style={styles.modalLabel}>Waste %</Text>
+          <TextInput
+            style={styles.modalInput}
+            value={waste}
+            onChangeText={(t) => setWaste(sanitizeNumeric(t))}
+            keyboardType="numeric"
+            selectTextOnFocus
+            placeholder={`${calc.material.defaultWaste}  (catalog default)`}
+            placeholderTextColor={colors.textDimmer}
+            returnKeyType="next"
+            onSubmitEditing={() => Keyboard.dismiss()}
+          />
           <Text style={styles.modalLabel}>Your price {perBox ? '/ box' : `/ ${calc.material.unit}`}</Text>
           <TextInput
             style={styles.modalInput}
@@ -813,14 +846,13 @@ function EditMaterialModal({ calc, onClose, onSave, onDelete, savedDefault, onSa
             <Text style={styles.modalPreviewLabel}>{perBox ? 'Boxes' : 'Pieces'} needed: {previewCount}</Text>
             <Text style={styles.modalPreviewLabel}>Subtotal: {formatCurrency(previewSubtotal)}</Text>
           </View>
-          <View style={styles.modalActions}>
+          </ScrollView>
+          <View style={[styles.modalActions, { paddingBottom: insets.bottom }]}>
             <TouchableOpacity style={styles.modalDeleteBtn} onPress={onDelete}><Text style={styles.modalDeleteText}>Delete</Text></TouchableOpacity>
             <TouchableOpacity style={[styles.modalSaveBtn, { flex: 1 }]} onPress={submit}><Text style={styles.modalSaveText}>Save</Text></TouchableOpacity>
           </View>
         </View>
-          </TouchableWithoutFeedback>
-        </KeyboardAvoidingView>
-      </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

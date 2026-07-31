@@ -98,8 +98,18 @@ export default function ProjectsScreen() {
         onLongPress={() => confirmDelete(item)}
       >
         <View style={styles.projectHeader}>
-          <Text style={styles.projectName}>{item.name}</Text>
-          <Text style={styles.projectDate}>{formatDate(item.updatedAt)}</Text>
+          <Text style={styles.projectName} numberOfLines={1}>{item.name}</Text>
+          <View style={styles.projectHeaderRight}>
+            <Text style={styles.projectDate}>{formatDate(item.updatedAt)}</Text>
+            {/* Long-press deletes too, but that's invisible — give it a control. */}
+            <TouchableOpacity
+              onPress={() => confirmDelete(item)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              accessibilityLabel={`Delete ${item.name}`}
+            >
+              <Text style={styles.projectDeleteBtn}>🗑</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.projectStats}>
           <Text style={styles.projectStat}>{item.calculations.length} materials</Text>
@@ -215,7 +225,9 @@ const styles = StyleSheet.create({
   emptySubtext: { fontSize: 14, color: colors.textDimmer, textAlign: 'center' },
   projectCard: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: radius.lg, padding: spacing.lg, marginBottom: spacing.md },
   projectHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: spacing.sm },
-  projectName: { fontSize: 17, fontWeight: '600', color: colors.text, letterSpacing: -0.3 },
+  projectHeaderRight: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  projectName: { fontSize: 17, fontWeight: '600', color: colors.text, letterSpacing: -0.3, flex: 1, marginRight: spacing.sm },
+  projectDeleteBtn: { fontSize: 16, opacity: 0.65 },
   projectDate: { fontSize: 13, color: colors.textDimmer },
   projectStats: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
   projectStat: { fontSize: 13, color: colors.textDim },

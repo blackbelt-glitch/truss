@@ -14,11 +14,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import * as Haptics from 'expo-haptics';
-import { Audio } from 'expo-av';
+import {
+  ExpoSpeechRecognitionModule,
+  useSpeechRecognitionEvent,
+} from 'expo-speech-recognition';
 import { colors, spacing, radius, typography } from '../theme';
 import { materials, calculateMaterial, formatCurrency, MaterialCalculation } from '../data/materials';
 import { loadDefaultPrices, calculateWithDefaultPrice } from '../data/priceStore';
-import { transcribeAudio } from '../services/whisper';
 
 interface ParsedItem {
   icon: string;
@@ -37,62 +39,66 @@ export default function VoiceScreen() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [manualInput, setManualInput] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  // Recognition runs on-device (Apple's Speech framework via
+  // expo-speech-recognition) — no server, no API key, works offline, and
+  // audio never leaves the phone.
+  const finalTranscriptRef = useRef('');
 
   // Warm the saved-price cache so voice-added materials use the user's prices.
   useEffect(() => { loadDefaultPrices(); }, []);
 
   const haptic = (style = Haptics.ImpactFeedbackStyle.Light) => Haptics.impactAsync(style);
 
+  useSpeechRecognitionEvent('start', () => setIsRecording(true));
+
+  useSpeechRecognitionEvent('result', (event) => {
+    const text = event.results[0]?.transcript ?? '';
+    setTranscript(text);
+    if (event.isFinal) finalTranscriptRef.current = text;
+  });
+
+  useSpeechRecognitionEvent('end', () => {
+    setIsRecording(false);
+    const text = finalTranscriptRef.current || transcript;
+    if (text.trim()) parseTranscript(text);
+  });
+
+  useSpeechRecognitionEvent('error', (event) => {
+    setIsRecording(false);
+    if (event.error === 'not-allowed') {
+      setError('Speech recognition permission denied. Enable it in iPhone Settings → Truss → Speech Recognition & Microphone.');
+    } else if (event.error === 'no-speech') {
+      setError("Didn't catch that — try again, or type it below.");
+    } else {
+      setError(`Speech recognition error: ${event.message || event.error}`);
+    }
+  });
+
   const toggleRecording = async () => {
     if (isRecording) {
-      // Stop recording
       haptic(Haptics.ImpactFeedbackStyle.Medium);
-      try {
-        await recording?.stopAndUnloadAsync();
-        const uri = recording?.getURI();
-        setRecording(null);
-        setIsRecording(false);
-
-        if (uri) {
-          setIsProcessing(true);
-          setTranscript('Processing audio...');
-          const text = await transcribeAudio(uri);
-          setTranscript(text);
-          parseTranscript(text);
-        }
-      } catch (e: any) {
-        setError('Recording failed: ' + e.message);
-        setIsRecording(false);
-      }
+      ExpoSpeechRecognitionModule.stop();
       return;
     }
 
-    // Start recording
     haptic(Haptics.ImpactFeedbackStyle.Medium);
     try {
-      const permResult = await Audio.requestPermissionsAsync();
-      console.log('Mic permission:', permResult);
-      if (permResult.status !== 'granted') {
-        setError('Microphone permission denied. Enable it in iPhone Settings → Truss → Microphone');
+      const permResult = await ExpoSpeechRecognitionModule.requestPermissionsAsync();
+      if (!permResult.granted) {
+        setError('Speech recognition permission denied. Enable it in iPhone Settings → Truss → Speech Recognition & Microphone.');
         return;
       }
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: true,
-        playsInSilentModeIOS: true,
-      });
-      const { recording: newRecording } = await Audio.Recording.createAsync(
-        Audio.RecordingOptionsPresets.HIGH_QUALITY
-      );
-      console.log('Recording started:', newRecording);
-      setRecording(newRecording);
-      setIsRecording(true);
       setError(null);
       setTranscript('');
       setParsedItems([]);
+      finalTranscriptRef.current = '';
+      ExpoSpeechRecognitionModule.start({
+        lang: 'en-US',
+        interimResults: true,
+        continuous: false,
+      });
     } catch (e: any) {
-      console.error('Recording error:', e);
-      setError('Recording error: ' + e.message);
+      setError('Could not start speech recognition: ' + e.message);
     }
   };
 
