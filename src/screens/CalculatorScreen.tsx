@@ -697,20 +697,28 @@ function ConvertView() {
  * it doesn't land on one — a repeated decimal next to the value above it
  * isn't a fraction, it's just noise.
  */
+function gcd(a: number, b: number): number {
+  return b === 0 ? a : gcd(b, a % b);
+}
+
 function decimalToFractionSimple(decimal: number): string | null {
-  if (decimal === 0) return '0';
   const whole = Math.floor(decimal);
   const remainder = decimal - whole;
-  if (remainder === 0) return whole.toString();
-  const common: { [key: string]: string } = {
-    '0.0625': '1/16', '0.125': '1/8', '0.1875': '3/16', '0.25': '1/4',
-    '0.3125': '5/16', '0.375': '3/8', '0.4375': '7/16', '0.5': '1/2',
-    '0.5625': '9/16', '0.625': '5/8', '0.6875': '11/16', '0.75': '3/4',
-    '0.8125': '13/16', '0.875': '7/8', '0.9375': '15/16',
-  };
-  const frac = common[remainder.toFixed(4)];
-  if (frac) return whole > 0 ? `${whole} ${frac}` : frac;
-  return null;
+  // A whole number (including 0) has no fraction to convert — echoing it
+  // back is exactly what's already on screen above it.
+  if (remainder === 0) return null;
+
+  // Snap to the nearest sixteenth and reduce (8/16 -> 1/2, 4/16 -> 1/4, ...).
+  // Integer arithmetic here, not string-matching a decimal — toFixed(4) on
+  // 0.5 gives "0.5000", which never matches a "0.5" table key, so a lookup
+  // table silently misses every fraction whose exact form has fewer than
+  // 4 decimal digits (halves, quarters, eighths).
+  const sixteenths = Math.round(remainder * 16);
+  if (sixteenths === 0 || sixteenths === 16) return null; // rounds to a whole number
+  if (Math.abs(remainder - sixteenths / 16) > 0.001) return null; // not actually a sixteenth
+  const divisor = gcd(sixteenths, 16);
+  const frac = `${sixteenths / divisor}/${16 / divisor}`;
+  return whole > 0 ? `${whole} ${frac}` : frac;
 }
 
 // Edit Material Modal — change quantity and custom name
